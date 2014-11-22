@@ -60,9 +60,8 @@ class Parser:
     def parse_label(self, data):
         if not data.isalnum():
             return False
-        if self.debug:
+        if self.debug and data not in self.labels:
             print ("LABEL: %s" % (data))
-        #self.labels[data] = len(self.code)
         self.labels[data] = self.line
         return True
 
@@ -320,7 +319,6 @@ class Parser:
 
     def parse_jmp(self, opts):
         data = [x.strip() for x in opts.split(',')]
-        print (data)
         if len(data) == 2:
             cmp_ops = [x.strip() for x in data[0].split(' ')]
             cmp_op = 0
@@ -345,7 +343,6 @@ class Parser:
                 self.code += val
             elif ttype == 'label':
                 (est, est_size) = self.estimate_jump_len(target)
-                print ("EST ", est_size)
                 if est_size < 0xff:
                     bits = 1
                     self.code += chr(opcodes.JMP_LE8)
@@ -460,6 +457,6 @@ if __name__ == '__main__':
     p = Parser(data)
     p.parse()
 
-    print "res:\n%s" % (p)
+    print "Code:\n%s" % (p)
     with open(sys.argv[2], 'w') as f:
         f.write(p.generate())
