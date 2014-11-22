@@ -24,15 +24,6 @@ public:
     uint8_t fetch8();
 
     bool step();
-#if 0
-    uint32_t fetch();
-    Operation decode(uint32_t opcode);
-
-    void store(Operation &op);
-    void load(Operation &op);
-    void add(Operation &op);
-    void print_int(Operation &op);
-#endif
     inline void opcode(
         uint8_t num,
         std::function<bool (VM *)> func)
@@ -48,7 +39,6 @@ public:
     {
         return false;
     }
-
     inline bool debug() const
     {
         return m_debug;

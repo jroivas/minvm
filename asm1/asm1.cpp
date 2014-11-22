@@ -97,9 +97,7 @@ bool ASM1::store_str(core::VM *vm)
 bool ASM1::print_str(core::VM *vm)
 {
     if (vm->debug()) std::cerr << "PRINT_STR\n";
-    uint8_t reg = vm->fetch8();
-
-    std::cout << vm->regs().load_string(reg);
+    std::cout << vm->regs().load_string(vm->fetch8());
 
     return true;
 }
