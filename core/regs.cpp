@@ -44,6 +44,8 @@ uint64_t Registers::load_int(uint8_t num) const
 {
     if (num >= num_registers)
         throw std::string("Invalid register");
+    if (m_reg_type[num] != core::RegisterType::Integer)
+        throw std::string("Invalid register type, expected integer");
     return m_reg_int[num];
 }
 
@@ -51,6 +53,8 @@ double Registers::load_float(uint8_t num) const
 {
     if (num >= num_registers)
         throw std::string("Invalid register");
+    if (m_reg_type[num] != core::RegisterType::Float)
+        throw std::string("Invalid register type, expected float");
     return m_reg_float[num];
 }
 
@@ -58,5 +62,7 @@ std::string Registers::load_string(uint8_t num) const
 {
     if (num >= num_registers)
         throw std::string("Invalid register");
+    if (m_reg_type[num] != core::RegisterType::String)
+        throw std::string("Invalid register type, expected string");
     return m_reg_string[num];
 }
