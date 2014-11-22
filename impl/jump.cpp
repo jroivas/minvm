@@ -52,8 +52,15 @@ bool Jump::conditional(
 void Jump::jump_conditional(
     core::VM *vm, uint64_t addr, bool cond)
 {
+    if (vm->debug()) std::cerr << "JUMP_CONDITIONAL: " << cond << "\n";
     if (!cond) return;
 
+    if (vm->debug())
+        std::cerr << "JUMP_CONDITIONAL TO "
+                  << addr
+                  << " FROM "
+                  << vm->regs().pc()
+                  << "\n";
     vm->regs().pc_update(addr);
 }
 
@@ -61,9 +68,12 @@ bool Jump::jump8(core::VM *vm)
 {
     if (vm->debug()) std::cerr << "JUMP8\n";
 
+    uint64_t pos = vm->regs().pc();
+    int8_t diff = vm->fetch8();
+
     jump_conditional(
         vm,
-        vm->regs().pc() + vm->fetch8(),
+        pos + diff,
         true);
 
     return true;
@@ -73,6 +83,7 @@ bool Jump::jump16(core::VM *vm)
 {
     if (vm->debug()) std::cerr << "JUMP16\n";
 
+    uint64_t pos = vm->regs().pc();
     uint16_t raw = vm->fetch8();
     raw <<= 8;
     raw |= vm->fetch8();
@@ -80,7 +91,7 @@ bool Jump::jump16(core::VM *vm)
 
     jump_conditional(
         vm,
-        vm->regs().pc() + diff,
+        pos + diff,
         true);
 
     return true;
@@ -90,6 +101,7 @@ bool Jump::jump32(core::VM *vm)
 {
     if (vm->debug()) std::cerr << "JUMP16\n";
 
+    uint64_t pos = vm->regs().pc();
     uint32_t raw = vm->fetch8();
     raw <<= 8;
     raw |= vm->fetch8();
@@ -101,7 +113,7 @@ bool Jump::jump32(core::VM *vm)
 
     jump_conditional(
         vm,
-        vm->regs().pc() + diff,
+        pos + diff,
         true);
 
     return true;
@@ -109,6 +121,8 @@ bool Jump::jump32(core::VM *vm)
 
 bool Jump::jump64(core::VM *vm)
 {
+    if (vm->debug()) std::cerr << "JUMP64\n";
+
     uint64_t diff = 0;
     for (int i = 0; i < 8; ++i) {
         diff <<= 8;
@@ -138,15 +152,19 @@ bool Jump::jump_int(core::VM *vm)
 
 bool Jump::jump_le8(core::VM *vm)
 {
-    int8_t oper = vm->fetch8();
-    int8_t reg1 = vm->fetch8();
-    int8_t reg2 = vm->fetch8();
+    if (vm->debug()) std::cerr << "JUMP_LE8\n";
+    uint8_t oper = vm->fetch8();
+    uint8_t reg1 = vm->fetch8();
+    uint8_t reg2 = vm->fetch8();
+
+    uint64_t pos = vm->regs().pc();
+    int8_t diff = vm->fetch8();
 
     bool cond = conditional(vm, oper, reg1, reg2);
 
     jump_conditional(
         vm,
-        vm->regs().pc() + vm->fetch8(),
+        pos + diff,
         cond);
 
     return true;
@@ -154,12 +172,15 @@ bool Jump::jump_le8(core::VM *vm)
 
 bool Jump::jump_le16(core::VM *vm)
 {
+    if (vm->debug()) std::cerr << "JUMP_LE16\n";
+
     int8_t oper = vm->fetch8();
     int8_t reg1 = vm->fetch8();
     int8_t reg2 = vm->fetch8();
 
     bool cond = conditional(vm, oper, reg1, reg2);
 
+    uint64_t pos = vm->regs().pc();
     uint16_t raw = vm->fetch8();
     raw <<= 8;
     raw |= vm->fetch8();
@@ -167,7 +188,7 @@ bool Jump::jump_le16(core::VM *vm)
 
     jump_conditional(
         vm,
-        vm->regs().pc() + diff,
+        pos + diff,
         cond);
 
     return true;
@@ -175,12 +196,15 @@ bool Jump::jump_le16(core::VM *vm)
 
 bool Jump::jump_le32(core::VM *vm)
 {
+    if (vm->debug()) std::cerr << "JUMP_LE32\n";
+
     int8_t oper = vm->fetch8();
     int8_t reg1 = vm->fetch8();
     int8_t reg2 = vm->fetch8();
 
     bool cond = conditional(vm, oper, reg1, reg2);
 
+    uint64_t pos = vm->regs().pc();
     uint32_t raw = 0;
     for (int i = 0; i < 4; ++i) {
         raw <<= 8;
@@ -190,15 +214,16 @@ bool Jump::jump_le32(core::VM *vm)
 
     jump_conditional(
         vm,
-        vm->regs().pc() + diff,
+        pos + diff,
         cond);
-
 
     return true;
 }
 
 bool Jump::jump_le64(core::VM *vm)
 {
+    if (vm->debug()) std::cerr << "JUMP_LE64\n";
+
     int8_t oper = vm->fetch8();
     int8_t reg1 = vm->fetch8();
     int8_t reg2 = vm->fetch8();
@@ -221,6 +246,8 @@ bool Jump::jump_le64(core::VM *vm)
 
 bool Jump::jump_le_int(core::VM *vm)
 {
+    if (vm->debug()) std::cerr << "JUMP_LE_INT\n";
+
     int8_t oper = vm->fetch8();
     int8_t reg1 = vm->fetch8();
     int8_t reg2 = vm->fetch8();

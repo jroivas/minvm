@@ -7,6 +7,7 @@
 #include "impl/ints.hh"
 #include "impl/strs.hh"
 #include "impl/random.hh"
+#include "impl/jump.hh"
 
 using namespace core;
 
@@ -30,13 +31,26 @@ static uint8_t code[] = {
     (uint8_t)Opcode::STOP
 };
 
+static uint8_t loop[] = {
+    (uint8_t)Opcode::STORE_INT8, 0, 0,
+    (uint8_t)Opcode::STORE_INT8, 1, 10,
+    (uint8_t)Opcode::STORE_STR, 9, '\n', 0,
+    (uint8_t)Opcode::PRINT_INT, 0,
+    (uint8_t)Opcode::PRINT_STR, 9,
+    (uint8_t)Opcode::INC_INT, 0,
+    (uint8_t)Opcode::JMP_LE8, 1, 0, 1, (uint8_t)-10,
+    (uint8_t)Opcode::STOP
+};
+
 int main(int argc, char **argv)
 {
     VM vm((uint8_t*)code);
+    //VM vm((uint8_t*)loop);
     //vm.set_debug();
     impl::Ints ints(&vm);
     impl::Strs strs(&vm);
     impl::Random rand(&vm);
+    impl::Jump jump(&vm);
 
     try {
         while (vm.step());
