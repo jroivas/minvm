@@ -7,6 +7,7 @@ add_executable(minvm
     core/regs.cpp
     core/vm.cpp
     impl/ints.cpp
-    impl/strs.cpp)
+    impl/strs.cpp
+    impl/random.cpp)
 
 include_directories(core)

@@ -72,6 +72,7 @@ bool Ints::print_int(VM *vm)
 {
     if (vm->debug()) std::cerr << "PRINT_INT\n";
     uint8_t reg = vm->fetch8();
+    //std::cout << vm->regs().load_int(reg) << "\n";
     std::cout << vm->regs().load_int(reg);
     return true;
 }
