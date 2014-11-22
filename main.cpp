@@ -11,7 +11,8 @@
 
 using namespace core;
 
-static uint8_t code[] = {
+#if 0
+static uint8_t hello[] = {
     (uint8_t)Opcode::STORE_INT8, 0, 4,
     (uint8_t)Opcode::STORE_INT32, 1, 0x12, 0x34, 0x56, 0x78,
     (uint8_t)Opcode::ADD_INT, 2, 0, 1,
@@ -34,17 +35,33 @@ static uint8_t code[] = {
 static uint8_t loop[] = {
     (uint8_t)Opcode::STORE_INT8, 0, 0,
     (uint8_t)Opcode::STORE_INT8, 1, 10,
+    (uint8_t)Opcode::STORE_STR, 8, ' ', 0,
     (uint8_t)Opcode::STORE_STR, 9, '\n', 0,
     (uint8_t)Opcode::PRINT_INT, 0,
+    (uint8_t)Opcode::PRINT_STR, 8,
+    (uint8_t)Opcode::RANDOM, 2,
+    (uint8_t)Opcode::PRINT_INT, 2,
     (uint8_t)Opcode::PRINT_STR, 9,
     (uint8_t)Opcode::INC_INT, 0,
-    (uint8_t)Opcode::JMP_LE8, 1, 0, 1, (uint8_t)-10,
+    (uint8_t)Opcode::JMP_LE8, 1, 0, 1, (uint8_t)-16,
     (uint8_t)Opcode::STOP
 };
+#endif
 
 int main(int argc, char **argv)
 {
-    VM vm((uint8_t*)code);
+    if (argc <= 1) {
+        std::cout << "Usage: " << argv[0] << " application\n";
+        return 1;
+    }
+
+    std::ifstream input(argv[1], std::ios::in | std::ios::binary);
+    std::string code(
+        (std::istreambuf_iterator<char>(input)),
+        std::istreambuf_iterator<char>());
+
+    VM vm((uint8_t*)code.data());
+    //VM vm((uint8_t*)code);
     //VM vm((uint8_t*)loop);
     //vm.set_debug();
     impl::Ints ints(&vm);
@@ -59,13 +76,5 @@ int main(int argc, char **argv)
         std::cerr << "\n*** EXCEPTION: " << e << "\n";
         return 1;
     }
-#if 0
-    if (argc <= 1) {
-        std::cout << "Usage: " << argv[0] << " application\n";
-        return 1;
-    }
-
-    std::ifstream input(argv[1]);
-#endif
     return 0;
 }
