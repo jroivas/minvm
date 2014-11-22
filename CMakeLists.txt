@@ -6,6 +6,7 @@ add_executable(minvm
     main.cpp
     core/regs.cpp
     core/vm.cpp
-    asm1/asm1.cpp)
+    impl/ints.cpp
+    impl/strs.cpp)
 
 include_directories(core)

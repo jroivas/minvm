@@ -30,6 +30,8 @@ enum class Opcode : uint8_t
     PRINT_FLOAT,
     PRINT_STR,
 
+    RANDOM,
+
     STOP
 };
 

@@ -2,10 +2,13 @@
 
 #include "vm.hh"
 
-class ASM1
+namespace impl
+{
+
+class Ints
 {
 public:
-    ASM1(core::VM *vm);
+    Ints(core::VM *vm);
 
     static bool store_int8(core::VM *vm);
     static bool store_int32(core::VM *vm);
@@ -13,7 +16,6 @@ public:
 
     static bool add_int(core::VM *vm);
     static bool print_int(core::VM *vm);
-
-    static bool store_str(core::VM *vm);
-    static bool print_str(core::VM *vm);
 };
+
+}

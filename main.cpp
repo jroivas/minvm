@@ -4,7 +4,8 @@
 
 #include "opcodes.hh"
 #include "vm.hh"
-#include "asm1/asm1.hh"
+#include "impl/ints.hh"
+#include "impl/strs.hh"
 
 using namespace core;
 
@@ -23,7 +24,8 @@ int main(int argc, char **argv)
 {
     VM vm((uint8_t*)code);
     //vm.set_debug();
-    ASM1 inst(&vm);
+    impl::Ints ints(&vm);
+    impl::Strs strs(&vm);
 
     try {
         while (vm.step());
