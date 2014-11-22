@@ -160,6 +160,7 @@ bool Jump::jump_le8(core::VM *vm)
     uint64_t pos = vm->regs().pc();
     int8_t diff = vm->fetch8();
 
+    if (vm->debug()) std::cerr << "DIFF " << (int)diff << "\n";
     bool cond = conditional(vm, oper, reg1, reg2);
 
     jump_conditional(

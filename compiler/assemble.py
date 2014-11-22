@@ -1,7 +1,8 @@
 #!/usr/bin/python
 
-import sys
+import ctypes
 import opcodes
+import sys
 
 
 def read(fname):
@@ -24,13 +25,37 @@ class Parser:
         self.labels = {}
         self.line = 0
         self.regmap = {}
+        self.opers = {
+            '==': 0,
+            '<': 1,
+            '>': 2,
+            '<=': 3,
+            '>=': 4,
+            '!=': 5,
+            '&&': 8,
+            '||': 9,
+            '^': 14,
+            '%': 15
+            }
+
+    def hexstr(self, s):
+        res = ''
+        for c in s:
+            res += hex(ord(c)) + ' '
+        return res
 
     def __str__(self):
         r = ''
         for l in self.output:
-            r += '%s: %s\n' % (l, self.output[l])
+            r += '%s: %s\n' % (l, self.hexstr(self.output[l]))
         return r
         #return self.code
+
+    def generate(self):
+        res = ''
+        for l in self.output:
+            res += self.output[l]
+        return res
 
     def parse_label(self, data):
         if not data.isalnum():
@@ -41,9 +66,30 @@ class Parser:
         self.labels[data] = self.line
         return True
 
+    def raw_number_neg(self, num):
+        if num >= 0:
+            raise ValueError('Invalid logic, number should not be positive')
+
+        if ctypes.c_uint8(-num).value == -num and -num < 0xff/2:
+            return ctypes.c_uint8(num).value
+        if ctypes.c_uint16(-num).value == -num and -num < 0xffff/2:
+            return ctypes.c_uint16(num).value
+        if ctypes.c_uint32(-num).value == -num and -num < 0xffffffff/2:
+            return ctypes.c_uint32(num).value
+
+        return ctypes.c_uint64(num).value
+
     def raw_number(self, num):
         """
         >>> p = Parser('')
+        >>> p.raw_number(-1)
+        '\\xff'
+        >>> p.raw_number(-2)
+        '\\xfe'
+        >>> p.raw_number(-3)
+        '\\xfd'
+        >>> p.raw_number(-200)
+        '8\\xff'
         >>> p.raw_number(48)
         '0'
         >>> p.raw_number(0x5048)
@@ -54,8 +100,17 @@ class Parser:
         'ABC'
         >>> p.raw_number(0x4400434241)
         'ABC\\x00D'
+        >>> p.raw_number(2147483647)
+        '\\xff\\xff\\xff\\x7f'
+        >>> p.raw_number(2147483649)
+        '\\x01\\x00\\x00\\x80'
         """
         res = ''
+        if num < 0:
+            #if not signed:
+            #    raise ParseError('Negative number in invalid place: %s @%s' % (num, self.line))
+            num = self.raw_number_neg(num)
+
         while num > 0:
             val = num & 0xff
             res += chr(val)
@@ -129,6 +184,27 @@ class Parser:
             return res
         return res[1]
 
+    def format_string(self, s):
+        res = ''
+        escape = False
+        for c in s:
+            if not escape and c == '\\':
+                escape = True
+            elif escape and c == 'n':
+                res += '\n'
+                escape = False
+            elif escape and c == 't':
+                res += '\t'
+                escape = False
+            elif escape and c == '"':
+                res += '"'
+                escape = False
+            elif escape:
+                raise ParseError("Invalid escape: \\%s @%s" % (c, self.line))
+            else:
+                res += c
+        return res
+
     def parse_store(self, opts):
         data = [x.strip() for x in opts.split(',')]
         if len(data) != 2:
@@ -153,17 +229,19 @@ class Parser:
             self.regmap[reg] = 'int'
             self.code += self.output_num(reg, False)
             self.code += val
-        elif value.isfloat():
+        elif self.is_float(value):
             # FIXME
             # Float
             self.regmap[reg] = 'float'
             pass
-        else:
+        elif value[0] == '"' and value[-1] == '"':
             # String
             self.code += chr(opcodes.STORE_STR)
             self.code += self.output_num(reg, False)
             self.regmap[reg] = 'str'
-            self.code += value + '\x00'
+            self.code += self.format_string(value[1:-1]) + '\x00'
+        else:
+            raise ParseError("Invalid argument for STORE: %s @%s" % (value, self.line))
 
     def parse_print(self, opts):
         opts = opts.strip()
@@ -176,11 +254,145 @@ class Parser:
             elif self.regmap[reg] == 'str':
                 self.code += chr(opcodes.PRINT_STR)
             self.code += self.output_num(reg, False)
-            print ("print %s %s" % (self.regmap[reg], reg))
+        else:
+            raise ParseError("Unsupported PRINT: %s @%s" % (opts, self.line))
+        """
         elif opts in self.labels:
             self.code += 'FIXME'
             self.code += chr(opcodes.PRINT_STR)
             print ("print %s" % (opts))
+        elif opts[0] == '"':
+            self.code += chr(opcodes.PRINT_STR)
+            self.code += opts
+            self.code += '\x00'
+            print ("print %s" % (opts))
+        """
+
+    def parse_inc(self, opts):
+        opts = opts.strip()
+        if opts[0] == 'R':
+            reg = self.parse_reg(opts)
+            self.code += chr(opcodes.INC_INT)
+            self.code += self.output_num(reg, False)
+        else:
+            raise ParseError("Unsupported INC: %s @%s" % (opts, self.line))
+
+    def parse_dec(self, opts):
+        opts = opts.strip()
+        if opts[0] == 'R':
+            reg = self.parse_reg(opts)
+            self.code += chr(opcodes.DEC_INT)
+            self.code += self.output_num(reg, False)
+        else:
+            raise ParseError("Unsupported DEC: %s @%s" % (opts, self.line))
+
+    def parse_target(self, target):
+        if target in self.labels:
+            return ('label', self.labels[target])
+
+        if target[0] == 'R':
+            return ('reg', self.parse_reg(target))
+        if target.isnum():
+            return ('imm', int(target))
+
+        return None
+
+    def estimate_jump_len(self, target_line):
+        diff = target_line - self.line
+
+        fuzzy = False
+
+        s = target_line
+        jlen = 0
+        while s < self.line:
+            jlen += len(self.output[s])
+            if 'FIXME' in self.output[s]:
+                jlen += 10 # FIXME
+                fuzzy = True
+            s += 1
+
+        if diff < 0:
+            return (fuzzy, -jlen)
+        if diff > 0 and diff < 50:
+            return (True, (jlen + 10) * 10)
+
+        raise ParseError('Can\'t estimate jump length')
+
+    def parse_jmp(self, opts):
+        data = [x.strip() for x in opts.split(',')]
+        print (data)
+        if len(data) == 2:
+            cmp_ops = [x.strip() for x in data[0].split(' ')]
+            cmp_op = 0
+            if len(cmp_ops) == 3:
+                cmp_op = self.opers[cmp_ops[1]]
+                reg1 = self.parse_reg(cmp_ops[0])
+                reg2 = self.parse_reg(cmp_ops[2])
+            else:
+                raise ParseError("Unsupported JMP: %s @%s" % (opts, self.line))
+
+            (ttype, target) = self.parse_target(data[1].strip())
+            if ttype == 'imm':
+                (cnt, val) = self.output_num(target)
+                if cnt == 1:
+                    self.code += chr(opcodes.JMP8)
+                elif cnt == 2:
+                    self.code += chr(opcodes.JMP16)
+                elif cnt == 4:
+                    self.code += chr(opcodes.JMP32)
+                elif cnt == 4:
+                    self.code += chr(opcodes.JMP64)
+                self.code += val
+            elif ttype == 'label':
+                (est, est_size) = self.estimate_jump_len(target)
+                print ("EST ", est_size)
+                if est_size < 0xff:
+                    bits = 1
+                    self.code += chr(opcodes.JMP_LE8)
+                elif est_size < 0xffff:
+                    bits = 2
+                    self.code += chr(opcodes.JMP_LE16)
+                elif est_size < 0xffffffff:
+                    bits = 4
+                    self.code += chr(opcodes.JMP_LE32)
+                else:
+                    bits = 8
+                    self.code += chr(opcodes.JMP_LE64)
+
+                self.code += self.output_num(cmp_op, False)
+                self.code += self.output_num(reg1, False)
+                self.code += self.output_num(reg2, False)
+
+                if not est:
+                    if est_size < 0:
+                        est_size -= 4
+                    else:
+                        (extra_bytes, _) = self.output_num(est_size + 8)
+                        est_size += extra_bytes
+                    self.code += self.output_num(est_size, False)
+                else:
+                    self.code = 'FIXME' + self.code
+            else:
+                raise ParseError("Unsupported JMP target: %s @%s" % (data[1], self.line))
+
+        elif len(data) == 1:
+            target = self.parse_target(data[1].strip())
+        else:
+            raise ParseError("Invalid JMP: %s @%s" % (opts, self.line))
+
+    def parse_db(self, opts):
+        data = [x.strip() for x in opts.split(',')]
+        for val in data:
+            if not val:
+                continue
+            if val[0] == '\'':
+                self.code += self.format_string(val[1:-1])
+            elif val[0] == '\"':
+                self.code += self.format_string(val[1:-1])
+            elif val[0] == '0' and val[1] == 'x':
+                self.code += self.output_num(int(val, 16), False)
+            elif val.isdigit():
+                self.code += self.output_num(int(val), False)
 
     def parse_command(self, cmd, opts):
         cmd = cmd.upper()
@@ -188,6 +400,16 @@ class Parser:
             self.parse_store(opts)
         elif cmd == 'PRINT':
             self.parse_print(opts)
+        elif cmd == 'INC':
+            self.parse_inc(opts)
+        elif cmd == 'DEC':
+            self.parse_dec(opts)
+        elif cmd == 'JMP':
+            self.parse_jmp(opts)
+        elif cmd == 'DB':
+            self.parse_db(opts)
+        elif cmd == 'STOP':
+            self.code += chr(opcodes.STOP)
         else:
             print cmd, opts
 
@@ -230,12 +452,14 @@ class Parser:
             self.output[self.line] = self.code
 
 if __name__ == '__main__':
-    if len(sys.argv) <= 1:
-        print ('Usage: %s input.asm' % (sys.argv[0]));
+    if len(sys.argv) <= 2:
+        print ('Usage: %s input.asm output.bin' % (sys.argv[0]));
         sys.exit(1)
 
     data = read(sys.argv[1])
     p = Parser(data)
     p.parse()
 
-    print "res: %s" % (p)
+    print "res:\n%s" % (p)
+    with open(sys.argv[2], 'w') as f:
+        f.write(p.generate())
