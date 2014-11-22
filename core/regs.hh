@@ -7,7 +7,6 @@ namespace core
 {
 
 static const uint8_t num_registers = 16;
-static const uint8_t pc_num = 255;
 
 enum class RegisterType : uint8_t
 {
