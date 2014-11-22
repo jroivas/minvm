@@ -44,7 +44,7 @@ bool Ints::store_int64(VM *vm)
     if (vm->debug()) std::cerr << "STORE_INT64\n";
     uint8_t reg = vm->fetch8();
     uint64_t val = 0;
-    for (uint32_t i = 0; i < 4; ++i) {
+    for (uint32_t i = 0; i < 8; ++i) {
         val <<= 8;
         val |= vm->fetch8();
     }

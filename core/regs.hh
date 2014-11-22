@@ -34,6 +34,10 @@ public:
     {
         return m_pc;
     }
+    inline void pc_update(uint64_t val)
+    {
+        m_pc = val;
+    }
     inline void next()
     {
         ++m_pc;

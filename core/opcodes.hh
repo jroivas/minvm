@@ -32,6 +32,18 @@ enum class Opcode : uint8_t
 
     RANDOM,
 
+    JMP8,
+    JMP16,
+    JMP32,
+    JMP64,
+    JMP_INT,
+
+    JMP_LE8,
+    JMP_LE16,
+    JMP_LE32,
+    JMP_LE64,
+    JMP_LE_INT,
+
     STOP
 };
 
