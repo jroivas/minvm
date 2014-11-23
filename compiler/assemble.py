@@ -171,9 +171,6 @@ class Parser:
             return -1
 
         reg = int(regdata[1:])
-        if reg == 0:
-            raise ParseError("Invalid register: %s @%s" % (regdata, self.line))
-        reg -= 1
 
         return reg
 

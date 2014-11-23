@@ -34,6 +34,22 @@ static void test_basic_opcodes()
     assert(!vm.get_opcode((uint8_t)core::Opcode::STOP)(&vm));
 }
 
+static void test_empty_vm()
+{
+    core::VM vm;
+
+    assertThrows(
+        std::string,
+        "Memory access out of bounds",
+        vm.step());
+
+    vm.load(nullptr, 10);
+    assertThrows(
+        std::string,
+        "Invalid memory",
+        vm.step());
+}
+
 static void test_memory_fetch()
 {
     core::VM vm;
@@ -112,6 +128,7 @@ static void test_memory_limits()
 void test_vm()
 {
     TEST_CASE(test_basic_opcodes);
+    TEST_CASE(test_empty_vm);
     TEST_CASE(test_memory_fetch);
     TEST_CASE(test_memory_step);
     TEST_CASE(test_memory_exe);

@@ -1,4 +1,6 @@
 #include "regs.hh"
+#include <sstream>
+#include <iomanip>
 
 using core::Registers;
 
@@ -81,4 +83,26 @@ void Registers::copy(uint8_t dest, uint8_t src)
         throw std::string("Invalid register");
 
     m_reg[dest] = m_reg[src];
+}
+
+std::string Registers::dump()
+{
+    std::stringstream ss;
+    ss << "IP: ";
+    ss << std::setw(20) << std::setfill(' ');
+    ss << m_pc << "\n";
+    ss << "Registers:\n";
+    for (uint8_t i = 0; i < num_registers; ++i) {
+        ss << std::setw(2) << std::setfill('0') << (int)i;
+        ss << ": ";
+        ss << std::setw(20) << std::setfill(' ');
+        if (m_reg[i].m_type == core::RegisterType::Integer)
+            ss << m_reg[i].m_int;
+        else if (m_reg[i].m_type == core::RegisterType::Float)
+            ss << m_reg[i].m_float;
+        else if (m_reg[i].m_type == core::RegisterType::String)
+            ss << m_reg[i].m_str;
+        ss << "\n";
+    }
+    return ss.str();
 }

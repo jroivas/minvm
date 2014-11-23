@@ -61,6 +61,7 @@ public:
     {
         m_pc = 0;
     }
+    std::string dump();
 
 private:
     uint64_t m_pc;

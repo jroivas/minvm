@@ -75,6 +75,7 @@ int main(int argc, char **argv)
     }
     catch (std::string e) {
         std::cerr << "\n*** EXCEPTION: " << e << "\n";
+        std::cerr << "\n" << vm.regs().dump();
         return 1;
     }
     return 0;

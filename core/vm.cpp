@@ -38,6 +38,8 @@ uint8_t VM::fetch8()
     uint64_t pos = m_regs.pc();
     if (pos >= m_size)
         throw std::string("Memory access out of bounds");
+    if (m_mem == nullptr)
+        throw std::string("Invalid memory");
 
     uint8_t res = m_mem[pos];
     m_regs.next();
