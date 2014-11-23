@@ -11,6 +11,10 @@ Registers::Registers() : m_pc(0)
 
 void Registers::store_int(uint8_t num, uint64_t val)
 {
+    if (num == (uint8_t)-1) {
+        m_pc = val;
+        return;
+    }
     if (num >= num_registers)
         throw std::string("Invalid register");
     m_reg[num].m_type = core::RegisterType::Integer;
@@ -42,6 +46,9 @@ core::RegisterType Registers::type(uint8_t num)
 
 uint64_t Registers::load_int(uint8_t num) const
 {
+    if (num == (uint8_t)-1) {
+        return m_pc;
+    }
     if (num >= num_registers)
         throw std::string("Invalid register");
     if (m_reg[num].m_type != core::RegisterType::Integer)

@@ -55,7 +55,7 @@ public:
     {
         ++m_pc;
     }
-    inline void reset_pc()
+    inline void pc_reset()
     {
         m_pc = 0;
     }

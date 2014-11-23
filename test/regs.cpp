@@ -66,11 +66,77 @@ static void test_invalid_register()
         regs.load_int(99));
 }
 
+static void test_type()
+{
+    core::Registers regs;
+
+    // Default type is int
+    assert(regs.type(10) == core::RegisterType::Integer);
+
+    regs.store_int(0, 1);
+    regs.store_float(1, 10.1);
+    regs.store_string(2, "abc");
+
+    assert(regs.type(0) == core::RegisterType::Integer);
+    assert(regs.type(1) == core::RegisterType::Float);
+    assert(regs.type(2) == core::RegisterType::String);
+
+    regs.store_int(1, 42);
+    assert(regs.type(0) == core::RegisterType::Integer);
+    assert(regs.type(1) == core::RegisterType::Integer);
+    assert(regs.type(2) == core::RegisterType::String);
+
+    regs.store_float(0, 42.42);
+    assert(regs.type(0) == core::RegisterType::Float);
+    assert(regs.type(1) == core::RegisterType::Integer);
+    assert(regs.type(2) == core::RegisterType::String);
+}
+
+static void test_pc()
+{
+    core::Registers regs;
+
+    assert(regs.pc() == 0);
+
+    regs.next();
+    assert(regs.pc() == 1);
+
+    regs.next();
+    assert(regs.pc() == 2);
+
+    regs.pc_update(5);
+    assert(regs.pc() == 5);
+
+    regs.pc_reset();
+    assert(regs.pc() == 0);
+
+    regs.next();
+    assert(regs.pc() == 1);
+
+    // PC accessible as int thorough special register -1
+    assert(regs.load_int(-1) == 1);
+
+    regs.store_int(-1, 42);
+    assert(regs.pc() == 42);
+
+    assertThrows(
+        std::string,
+        "Invalid register",
+        regs.store_float(-1, 44.1));
+    assertThrows(
+        std::string,
+        "Invalid register",
+        regs.load_string(-1));
+}
+
 void test_regs()
 {
     TEST_CASE(test_basic_int);
     TEST_CASE(test_basic_float);
     TEST_CASE(test_basic_string);
 
+    TEST_CASE(test_type);
     TEST_CASE(test_invalid_register);
+
+    TEST_CASE(test_pc);
 }

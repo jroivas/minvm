@@ -27,7 +27,7 @@ void VM::init()
 void VM::load(uint8_t *mem)
 {
     m_mem = mem;
-    m_regs.reset_pc();
+    m_regs.pc_reset();
 }
 
 uint8_t VM::fetch8()
