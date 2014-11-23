@@ -1,0 +1,25 @@
+STORE R0, 0
+STORE R1, 0
+STORE R2, 0
+STORE R3, 0
+STORE R4, 100000
+STORE R5, 5678
+STORE R9, "\n"
+
+
+loop:
+    ADD R1, R1, R2
+    ADD R1, R1, R0
+
+    MUL R2, R1, R5
+    MUL R2, R2, R0
+
+    MUL R3, R0, R0
+
+    INC R0
+
+    JMP R0 < R4, loop
+
+;PRINT R0
+;PRINT R9
+STOP

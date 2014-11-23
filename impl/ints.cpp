@@ -9,6 +9,7 @@ using impl::Ints;
 Ints::Ints(VM *vm)
 {
     vm->opcode((uint32_t)Opcode::STORE_INT8, Ints::store_int8);
+    vm->opcode((uint32_t)Opcode::STORE_INT16, Ints::store_int16);
     vm->opcode((uint32_t)Opcode::STORE_INT32, Ints::store_int32);
     vm->opcode((uint32_t)Opcode::STORE_INT64, Ints::store_int64);
 
@@ -17,6 +18,10 @@ Ints::Ints(VM *vm)
 
     vm->opcode((uint32_t)Opcode::ADD_INT, Ints::add_int);
     vm->opcode((uint32_t)Opcode::SUB_INT, Ints::sub_int);
+
+    vm->opcode((uint32_t)Opcode::MUL_INT, Ints::mul_int);
+    vm->opcode((uint32_t)Opcode::DIV_INT, Ints::div_int);
+    vm->opcode((uint32_t)Opcode::MOD_INT, Ints::mod_int);
 
     vm->opcode((uint32_t)Opcode::PRINT_INT, Ints::print_int);
 }
@@ -31,6 +36,20 @@ bool Ints::store_int8(VM *vm)
     return true;
 }
 
+bool Ints::store_int16(VM *vm)
+{
+    if (vm->debug()) std::cerr << "STORE_INT16\n";
+
+    uint8_t reg = vm->fetch8();
+    uint16_t val = 0;
+    for (uint16_t i = 0; i < 2; ++i) {
+        val <<= 8;
+        val |= vm->fetch8();
+    }
+    vm->regs().store_int(reg, val);
+
+    return true;
+}
 bool Ints::store_int32(VM *vm)
 {
     if (vm->debug()) std::cerr << "STORE_INT32\n";
@@ -108,6 +127,57 @@ bool Ints::sub_int(VM *vm)
     vm->regs().store_int(
         reg1,
         vm->regs().load_int(reg2) -
+        vm->regs().load_int(reg3));
+
+    return true;
+}
+
+bool Ints::mul_int(core::VM *vm)
+{
+    if (vm->debug()) std::cerr << "MUL_INT\n";
+    uint8_t reg1 = vm->fetch8();
+    uint8_t reg2 = vm->fetch8();
+    uint8_t reg3 = vm->fetch8();
+
+    vm->regs().store_int(
+        reg1,
+        vm->regs().load_int(reg2) *
+        vm->regs().load_int(reg3));
+
+    return true;
+}
+
+bool Ints::div_int(core::VM *vm)
+{
+    if (vm->debug()) std::cerr << "DIV_INT\n";
+    uint8_t reg1 = vm->fetch8();
+    uint8_t reg2 = vm->fetch8();
+    uint8_t reg3 = vm->fetch8();
+
+    if (reg3 == 0)
+        throw std::string("Divide by zero!");
+
+    vm->regs().store_int(
+        reg1,
+        vm->regs().load_int(reg2) /
+        vm->regs().load_int(reg3));
+
+    return true;
+}
+
+bool Ints::mod_int(core::VM *vm)
+{
+    if (vm->debug()) std::cerr << "MOD_INT\n";
+    uint8_t reg1 = vm->fetch8();
+    uint8_t reg2 = vm->fetch8();
+    uint8_t reg3 = vm->fetch8();
+
+    if (reg3 == 0)
+        throw std::string("Divide by zero!");
+
+    vm->regs().store_int(
+        reg1,
+        vm->regs().load_int(reg2) %
         vm->regs().load_int(reg3));
 
     return true;

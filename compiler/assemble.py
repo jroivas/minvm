@@ -88,21 +88,21 @@ class Parser:
         >>> p.raw_number(-3)
         '\\xfd'
         >>> p.raw_number(-200)
-        '8\\xff'
+        '\\xff8'
         >>> p.raw_number(48)
         '0'
         >>> p.raw_number(0x5048)
-        'HP'
+        'PH'
         >>> p.raw_number(0x434241)
-        'ABC'
+        'CBA'
         >>> p.raw_number(0x00434241)
-        'ABC'
+        'CBA'
         >>> p.raw_number(0x4400434241)
-        'ABC\\x00D'
+        'D\\x00CBA'
         >>> p.raw_number(2147483647)
-        '\\xff\\xff\\xff\\x7f'
+        '\\x7f\\xff\\xff\\xff'
         >>> p.raw_number(2147483649)
-        '\\x01\\x00\\x00\\x80'
+        '\\x80\\x00\\x00\\x01'
         """
         res = ''
         if num < 0:
@@ -114,7 +114,7 @@ class Parser:
             val = num & 0xff
             res += chr(val)
             num = num >> 8
-        return res
+        return res[::-1]
 
     def fill_to_bytes(self, num):
         """
@@ -293,6 +293,19 @@ class Parser:
 
         return None
 
+    def find_output(self, pos):
+        if pos in self.output:
+            return self.output[pos]
+        return None
+        """
+        while pos < max(self.output):
+            pos += 1
+            if pos in self.output:
+                return self.output[pos]
+
+        raise ParseError("No code for line: %s" % (pos))
+        """
+
     def estimate_jump_len(self, target_line):
         diff = target_line - self.line
 
@@ -301,11 +314,15 @@ class Parser:
         s = target_line
         jlen = 0
         while s < self.line:
-            jlen += len(self.output[s])
-            if 'FIXME' in self.output[s]:
+            outp = self.find_output(s)
+            s += 1
+            if outp is None:
+                print "skipity: ", s
+                continue
+            jlen += len(outp)
+            if 'FIXME' in outp:
                 jlen += 10 # FIXME
                 fuzzy = True
-            s += 1
 
         if diff < 0:
             return (fuzzy, -jlen)
@@ -388,6 +405,50 @@ class Parser:
             elif val.isdigit():
                 self.code += self.output_num(int(val), False)
 
+    def stub_2regs(self, opcode, name, opts):
+        data = [x.strip() for x in opts.split(',')]
+        if len(data) == 2:
+            reg1 = self.parse_reg(data[0])
+            reg2 = self.parse_reg(data[1])
+
+            self.code += chr(opcode)
+            self.code += self.output_num(reg1, False)
+            self.code += self.output_num(reg2, False)
+        else:
+            raise ParseError("Unsupported %s: %s @%s" % (name, opts, self.line))
+
+    def stub_3regs(self, opcode, name, opts):
+        data = [x.strip() for x in opts.split(',')]
+        if len(data) == 3:
+            reg1 = self.parse_reg(data[0])
+            reg2 = self.parse_reg(data[1])
+            reg3 = self.parse_reg(data[2])
+
+            self.code += chr(opcode)
+            self.code += self.output_num(reg1, False)
+            self.code += self.output_num(reg2, False)
+            self.code += self.output_num(reg3, False)
+        else:
+            raise ParseError("Unsupported %s: %s @%s" % (name, opts, self.line))
+
+    def parse_mov(self, opts):
+        self.stub_2regs(opcodes.MOV, 'MOV', opts)
+
+    def parse_add(self, opts):
+        self.stub_3regs(opcodes.ADD_INT, 'ADD', opts)
+
+    def parse_sub(self, opts):
+        self.stub_3regs(opcodes.SUB_INT, 'SUB', opts)
+
+    def parse_mul(self, opts):
+        self.stub_3regs(opcodes.MUL_INT, 'MUL', opts)
+
+    def parse_div(self, opts):
+        self.stub_3regs(opcodes.DIV_INT, 'DIV', opts)
+
+    def parse_mod(self, opts):
+        self.stub_3regs(opcodes.MOD_INT, 'MOD', opts)
+
     def parse_command(self, cmd, opts):
         cmd = cmd.upper()
         if cmd == 'STORE':
@@ -400,6 +461,18 @@ class Parser:
             self.parse_dec(opts)
         elif cmd == 'JMP':
             self.parse_jmp(opts)
+        elif cmd == 'MOV':
+            self.parse_mov(opts)
+        elif cmd == 'ADD':
+            self.parse_add(opts)
+        elif cmd == 'SUB':
+            self.parse_sub(opts)
+        elif cmd == 'MUL':
+            self.parse_mul(opts)
+        elif cmd == 'DIV':
+            self.parse_div(opts)
+        elif cmd == 'MOD':
+            self.parse_mod(opts)
         elif cmd == 'DB':
             self.parse_db(opts)
         elif cmd == 'STOP':
