@@ -60,7 +60,7 @@ int main(int argc, char **argv)
         (std::istreambuf_iterator<char>(input)),
         std::istreambuf_iterator<char>());
 
-    VM vm((uint8_t*)code.data());
+    VM vm((uint8_t*)code.data(), code.length());
     //vm.set_debug();
 
     impl::Ints ints(&vm);

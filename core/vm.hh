@@ -12,14 +12,14 @@ class VM
 {
 public:
     VM();
-    VM(uint8_t *mem);
+    VM(uint8_t *mem, uint64_t size);
 
     inline void set_debug()
     {
         m_debug = true;
     }
 
-    void load(uint8_t *mem);
+    void load(uint8_t *mem, uint64_t size);
     Opcode fetch();
     uint8_t fetch8();
 
@@ -31,14 +31,11 @@ public:
         m_opcodes[num] = func;
     }
 
-    static bool nop(VM *)
+    inline std::function<bool (VM *)> get_opcode(uint8_t num)
     {
-        return true;
+        return m_opcodes[num];
     }
-    static bool stop(VM *)
-    {
-        return false;
-    }
+
     inline bool debug() const
     {
         return m_debug;
@@ -49,11 +46,20 @@ public:
     }
 
 private:
+    static bool nop(VM *)
+    {
+        return true;
+    }
+    static bool stop(VM *)
+    {
+        return false;
+    }
     void init();
 
     std::function<bool (VM *)> m_opcodes[256];
     Registers m_regs;
     uint8_t *m_mem;
+    uint64_t m_size;
     bool m_debug;
 };
 
