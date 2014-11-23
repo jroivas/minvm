@@ -6,6 +6,7 @@ int main(int argc, char **argv)
 {
     REGISTER_TEST(regs);
     REGISTER_TEST(vm);
+    REGISTER_TEST(random);
 
     unsigned int res = 0;
     try {

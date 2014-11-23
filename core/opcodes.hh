@@ -44,6 +44,8 @@ enum class Opcode : uint8_t
     JMP_LE64,
     JMP_LE_INT,
 
+    MOV,
+
     STOP = 255
 };
 

@@ -27,8 +27,10 @@ You need C++11 capable compiler and CMake.
     cd build
     cmake ..
     make
+    make test
 
 
 ## License
 
 MIT
+
