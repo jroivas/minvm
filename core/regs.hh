@@ -43,6 +43,8 @@ public:
     double load_float(uint8_t num) const;
     std::string load_string(uint8_t num) const;
 
+    void copy(uint8_t dest, uint8_t src);
+
     inline uint64_t pc() const
     {
         return m_pc;

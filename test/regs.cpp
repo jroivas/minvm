@@ -129,6 +129,49 @@ static void test_pc()
         regs.load_string(-1));
 }
 
+static void test_copy()
+{
+    core::Registers regs;
+
+    regs.store_int(0, 1);
+    regs.store_float(1, 10.1);
+    regs.store_string(2, "abc");
+
+    assert(regs.type(5) == core::RegisterType::Integer);
+    assert(regs.load_int(5) == 0);
+    assert(regs.type(6) == core::RegisterType::Integer);
+    assert(regs.type(7) == core::RegisterType::Integer);
+
+    regs.copy(5, 0);
+    regs.copy(6, 1);
+    regs.copy(7, 2);
+
+    assert(regs.type(5) == core::RegisterType::Integer);
+    assert(regs.load_int(5) == 1);
+    assert(regs.load_int(0) == 1);
+    assert(regs.type(6) == core::RegisterType::Float);
+    assert(regs.load_float(6) == 10.1);
+    assert(regs.load_float(1) == 10.1);
+    assert(regs.type(7) == core::RegisterType::String);
+    assert(regs.load_string(7) == "abc");
+    assert(regs.load_string(2) == "abc");
+
+    regs.store_int(0, 42);
+    assert(regs.load_int(5) == 1);
+    assert(regs.load_int(0) == 42);
+
+    regs.copy(5, 7);
+    assert(regs.type(5) == core::RegisterType::String);
+    assert(regs.load_string(5) == "abc");
+    assert(regs.load_string(7) == "abc");
+    assert(regs.load_string(2) == "abc");
+
+    regs.store_string(7, "test");
+    assert(regs.load_string(5) == "abc");
+    assert(regs.load_string(7) == "test");
+    assert(regs.load_string(2) == "abc");
+}
+
 void test_regs()
 {
     TEST_CASE(test_basic_int);
@@ -139,4 +182,5 @@ void test_regs()
     TEST_CASE(test_invalid_register);
 
     TEST_CASE(test_pc);
+    TEST_CASE(test_copy);
 }

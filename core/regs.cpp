@@ -73,3 +73,12 @@ std::string Registers::load_string(uint8_t num) const
         throw std::string("Invalid register type, expected string");
     return m_reg[num].m_str;
 }
+
+void Registers::copy(uint8_t dest, uint8_t src)
+{
+    if (dest >= num_registers ||
+        src >= num_registers)
+        throw std::string("Invalid register");
+
+    m_reg[dest] = m_reg[src];
+}

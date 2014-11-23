@@ -8,6 +8,7 @@
 #include "impl/strs.hh"
 #include "impl/random.hh"
 #include "impl/jump.hh"
+#include "impl/mov.hh"
 
 using namespace core;
 
@@ -67,6 +68,7 @@ int main(int argc, char **argv)
     impl::Strs strs(&vm);
     impl::Random rand(&vm);
     impl::Jump jump(&vm);
+    impl::Mov mov(&vm);
 
     try {
         while (vm.step());

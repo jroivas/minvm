@@ -7,6 +7,7 @@ add_executable(test_runner
     regs.cpp
     vm.cpp
     random.cpp
+    mov.cpp
     )
 target_link_libraries(test_runner core)
 target_link_libraries(test_runner impl)

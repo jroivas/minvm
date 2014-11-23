@@ -10,6 +10,7 @@ class Jump
 public:
     Jump(core::VM *vm);
 
+private:
     static bool jump8(core::VM *vm);
     static bool jump16(core::VM *vm);
     static bool jump32(core::VM *vm);

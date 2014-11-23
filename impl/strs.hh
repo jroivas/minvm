@@ -10,6 +10,7 @@ class Strs
 public:
     Strs(core::VM *vm);
 
+private:
     static bool store_str(core::VM *vm);
     static bool print_str(core::VM *vm);
 };
