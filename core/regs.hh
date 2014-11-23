@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 namespace core
 {
@@ -13,6 +14,18 @@ enum class RegisterType : uint8_t
     Integer,
     Float,
     String
+};
+
+class RegisterData {
+public:
+    RegisterData() : m_type(RegisterType::Integer), m_int(0) {}
+
+    RegisterType m_type;
+    union {
+        uint64_t m_int;
+        double m_float;
+    };
+    std::string m_str;
 };
 
 class Registers
@@ -49,11 +62,7 @@ public:
 
 private:
     uint64_t m_pc;
-
-    RegisterType m_reg_type[num_registers];
-    uint64_t m_reg_int[num_registers];
-    double m_reg_float[num_registers];
-    std::string m_reg_string[num_registers];
+    std::vector<RegisterData> m_reg;
 };
 
 }

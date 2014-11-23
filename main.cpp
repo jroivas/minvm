@@ -61,9 +61,8 @@ int main(int argc, char **argv)
         std::istreambuf_iterator<char>());
 
     VM vm((uint8_t*)code.data());
-    //VM vm((uint8_t*)code);
-    //VM vm((uint8_t*)loop);
     //vm.set_debug();
+
     impl::Ints ints(&vm);
     impl::Strs strs(&vm);
     impl::Random rand(&vm);

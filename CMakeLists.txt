@@ -4,13 +4,18 @@ add_definitions(-std=c++0x)
 
 set(CMAKE_BUILD_TYPE Release)
 
-add_executable(minvm
-    main.cpp
-    core/regs.cpp
-    core/vm.cpp
-    impl/ints.cpp
-    impl/strs.cpp
-    impl/random.cpp
-    impl/jump.cpp)
+add_executable(minvm main.cpp)
 
 include_directories(core)
+include_directories(impl)
+
+add_subdirectory(core)
+add_subdirectory(impl)
+add_subdirectory(test)
+
+target_link_libraries(minvm core)
+target_link_libraries(minvm impl)
+
+enable_testing()
+add_test(tests
+    test/test_runner)
