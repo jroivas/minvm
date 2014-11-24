@@ -3,6 +3,7 @@
 import ctypes
 import opcodes
 import sys
+import math
 
 
 def read(fname):
@@ -383,7 +384,7 @@ class Parser:
                     self.code += self.output_num(est_size, False)
                 else:
                     print 'parse_jmp: FIXME'
-                    self.code = 'FIXME' + self.code
+                    self.code = 'FIXME %s,%s:' % (bits, target) + self.code
             else:
                 raise ParseError("Unsupported JMP target: %s @%s" % (data[1], self.line))
 
@@ -506,6 +507,53 @@ class Parser:
                 continue
             self.pre_parse_line(line)
 
+    def try_fix(self, line):
+        data = self.output[line].split(":")
+        (bits, target) = [int(x) for x in data[0][6:].split(',')]
+
+        tmp = line+1
+        size = 0
+        while tmp < target:
+            if tmp in self.output:
+                if self.output[tmp][:5] == 'FIXME':
+                    return (False, 0)
+                size += len(self.output[tmp])
+            tmp += 1
+        return (True, size)
+
+    def fix_line(self, line, size):
+        data = self.output[line].split(":")
+        (bits, target) = [int(x) for x in data[0][6:].split(',')]
+        data = ':'.join(data[1:])
+
+        num = self.output_num(size + bits, False)
+        while len(num) < bits/8:
+            num = '\x00' + num
+        self.output[line] = data + num
+
+    def try_fixes(self, lines):
+        for l in lines:
+            (res, size) = self.try_fix(l)
+            if res:
+                self.fix_line(l, size)
+
+    def fixme_lines(self):
+        flines = []
+        for c in self.output:
+            if self.output[c][:5] == "FIXME":
+                flines.append(c)
+        return flines
+
+    def fix_fixmes(self):
+        flines = self.fixme_lines()
+        tries = 0
+        while flines:
+            self.try_fixes(flines)
+            flines = self.fixme_lines()
+            tries += 1
+            if tries >= 100:
+                break
+
     def parse(self):
         self.pre_parse()
         for self.line, line in enumerate(self.data):
@@ -518,6 +566,8 @@ class Parser:
             self.parse_line(line)
 
             self.output[self.line] = self.code
+
+        self.fix_fixmes()
 
 if __name__ == '__main__':
     if len(sys.argv) <= 2:
