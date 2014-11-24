@@ -317,10 +317,10 @@ class Parser:
             outp = self.find_output(s)
             s += 1
             if outp is None:
-                print "skipity: ", s
                 continue
             jlen += len(outp)
             if 'FIXME' in outp:
+                print 'estimate_jump_len: FIXME'
                 jlen += 10 # FIXME
                 fuzzy = True
 
@@ -382,6 +382,7 @@ class Parser:
                         est_size += extra_bytes
                     self.code += self.output_num(est_size, False)
                 else:
+                    print 'parse_jmp: FIXME'
                     self.code = 'FIXME' + self.code
             else:
                 raise ParseError("Unsupported JMP target: %s @%s" % (data[1], self.line))
@@ -520,7 +521,7 @@ class Parser:
 
 if __name__ == '__main__':
     if len(sys.argv) <= 2:
-        print ('Usage: %s input.asm output.bin' % (sys.argv[0]));
+        print ('Usage: %s input.asm output.bin' % (sys.argv[0]))
         sys.exit(1)
 
     data = read(sys.argv[1])
