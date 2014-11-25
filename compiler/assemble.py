@@ -5,7 +5,6 @@ import opcodes
 import sys
 import math
 
-
 def read(fname):
     with open(fname, 'r') as f:
         return f.readlines()
@@ -18,6 +17,8 @@ class ParseError(Exception):
         return '%s' % (self.value)
 
 class Parser:
+    __MAGIC_JUMP = 'FIXME'
+
     def __init__(self, data):
         self.data = data
         self.code = ''
@@ -62,7 +63,7 @@ class Parser:
         if not data.isalnum():
             return False
         if self.debug and data not in self.labels:
-            print ("LABEL: %s" % (data))
+            print ('LABEL: %s' % (data))
         self.labels[data] = self.line
         return True
 
@@ -151,7 +152,7 @@ class Parser:
         elif num_bytes <= 8:
             num_bytes = 8
         else:
-            raise ParseError("Invalid number %s @%s" % (num, self.line))
+            raise ParseError('Invalid number %s @%s' % (num, self.line))
 
         while len(num) < num_bytes:
             num = '\x00' + num
@@ -166,7 +167,7 @@ class Parser:
 
     def parse_reg(self, regdata):
         if regdata != 'PC' and regdata.upper()[0] != 'R':
-            raise ParseError("Invalid register: %s @%s" % (regdata, self.line))
+            raise ParseError('Invalid register: %s @%s' % (regdata, self.line))
 
         if regdata == 'PC':
             return -1
@@ -197,7 +198,7 @@ class Parser:
                 res += '"'
                 escape = False
             elif escape:
-                raise ParseError("Invalid escape: \\%s @%s" % (c, self.line))
+                raise ParseError('Invalid escape: \\%s @%s' % (c, self.line))
             else:
                 res += c
         return res
@@ -205,7 +206,7 @@ class Parser:
     def parse_store(self, opts):
         data = [x.strip() for x in opts.split(',')]
         if len(data) != 2:
-            raise ParseError("Invalid number argument for STORE: %s (%s) @%s" % (len(data), opts, self.line))
+            raise ParseError('Invalid number argument for STORE: %s (%s) @%s' % (len(data), opts, self.line))
 
         reg = self.parse_reg(data[0])
 
@@ -227,7 +228,7 @@ class Parser:
             self.code += self.output_num(reg, False)
             self.code += val
         elif self.is_float(value):
-            # FIXME
+            # TODO
             # Float
             self.regmap[reg] = 'float'
             pass
@@ -238,31 +239,31 @@ class Parser:
             self.regmap[reg] = 'str'
             self.code += self.format_string(value[1:-1]) + '\x00'
         else:
-            raise ParseError("Invalid argument for STORE: %s @%s" % (value, self.line))
+            raise ParseError('Invalid argument for STORE: %s @%s' % (value, self.line))
 
     def parse_print(self, opts):
         opts = opts.strip()
         if opts[0] == 'R':
             reg = self.parse_reg(opts)
             if not reg in self.regmap:
-                raise ParseError("Using unused register for PRINT: %s @%s" % (opts, self.line))
+                raise ParseError('Using unused register for PRINT: %s @%s' % (opts, self.line))
             if self.regmap[reg] == 'int':
                 self.code += chr(opcodes.PRINT_INT)
             elif self.regmap[reg] == 'str':
                 self.code += chr(opcodes.PRINT_STR)
             self.code += self.output_num(reg, False)
         else:
-            raise ParseError("Unsupported PRINT: %s @%s" % (opts, self.line))
+            raise ParseError('Unsupported PRINT: %s @%s' % (opts, self.line))
         """
         elif opts in self.labels:
             self.code += 'FIXME'
             self.code += chr(opcodes.PRINT_STR)
-            print ("print %s" % (opts))
+            print ('print %s' % (opts))
         elif opts[0] == '"':
             self.code += chr(opcodes.PRINT_STR)
             self.code += opts
             self.code += '\x00'
-            print ("print %s" % (opts))
+            print ('print %s' % (opts))
         """
 
     def parse_inc(self, opts):
@@ -272,7 +273,7 @@ class Parser:
             self.code += chr(opcodes.INC_INT)
             self.code += self.output_num(reg, False)
         else:
-            raise ParseError("Unsupported INC: %s @%s" % (opts, self.line))
+            raise ParseError('Unsupported INC: %s @%s' % (opts, self.line))
 
     def parse_dec(self, opts):
         opts = opts.strip()
@@ -281,7 +282,7 @@ class Parser:
             self.code += chr(opcodes.DEC_INT)
             self.code += self.output_num(reg, False)
         else:
-            raise ParseError("Unsupported DEC: %s @%s" % (opts, self.line))
+            raise ParseError('Unsupported DEC: %s @%s' % (opts, self.line))
 
     def parse_target(self, target):
         if target in self.labels:
@@ -320,14 +321,15 @@ class Parser:
             if outp is None:
                 continue
             jlen += len(outp)
-            if 'FIXME' in outp:
-                print 'estimate_jump_len: FIXME'
-                jlen += 10 # FIXME
+            if Parser.__MAGIC_JUMP in outp:
+                jlen += 10
                 fuzzy = True
 
         if diff < 0:
             return (fuzzy, -jlen)
         if diff > 0 and diff < 50:
+            # Just estimate roughly upwards.
+            # Does not result optimal code, but it should work in most cases
             return (True, (jlen + 10) * 10)
 
         raise ParseError('Can\'t estimate jump length')
@@ -342,7 +344,7 @@ class Parser:
                 reg1 = self.parse_reg(cmp_ops[0])
                 reg2 = self.parse_reg(cmp_ops[2])
             else:
-                raise ParseError("Unsupported JMP: %s @%s" % (opts, self.line))
+                raise ParseError('Unsupported JMP: %s @%s' % (opts, self.line))
 
             (ttype, target) = self.parse_target(data[1].strip())
             if ttype == 'imm':
@@ -383,15 +385,14 @@ class Parser:
                         est_size += extra_bytes
                     self.code += self.output_num(est_size, False)
                 else:
-                    print 'parse_jmp: FIXME'
-                    self.code = 'FIXME %s,%s:' % (bits, target) + self.code
+                    self.code = '%s %s,%s:' % (Parser.__MAGIC_JUMP, bits, target) + self.code
             else:
-                raise ParseError("Unsupported JMP target: %s @%s" % (data[1], self.line))
+                raise ParseError('Unsupported JMP target: %s @%s' % (data[1], self.line))
 
         elif len(data) == 1:
             target = self.parse_target(data[1].strip())
         else:
-            raise ParseError("Invalid JMP: %s @%s" % (opts, self.line))
+            raise ParseError('Invalid JMP: %s @%s' % (opts, self.line))
 
     def parse_db(self, opts):
         data = [x.strip() for x in opts.split(',')]
@@ -417,7 +418,7 @@ class Parser:
             self.code += self.output_num(reg1, False)
             self.code += self.output_num(reg2, False)
         else:
-            raise ParseError("Unsupported %s: %s @%s" % (name, opts, self.line))
+            raise ParseError('Unsupported %s: %s @%s' % (name, opts, self.line))
 
     def stub_3regs(self, opcode, name, opts):
         data = [x.strip() for x in opts.split(',')]
@@ -431,7 +432,7 @@ class Parser:
             self.code += self.output_num(reg2, False)
             self.code += self.output_num(reg3, False)
         else:
-            raise ParseError("Unsupported %s: %s @%s" % (name, opts, self.line))
+            raise ParseError('Unsupported %s: %s @%s' % (name, opts, self.line))
 
     def parse_mov(self, opts):
         self.stub_2regs(opcodes.MOV, 'MOV', opts)
@@ -508,21 +509,21 @@ class Parser:
             self.pre_parse_line(line)
 
     def try_fix(self, line):
-        data = self.output[line].split(":")
+        data = self.output[line].split(':')
         (bits, target) = [int(x) for x in data[0][6:].split(',')]
 
         tmp = line+1
         size = 0
         while tmp < target:
             if tmp in self.output:
-                if self.output[tmp][:5] == 'FIXME':
+                if self.output[tmp][:5] == Parser.__MAGIC_JUMP:
                     return (False, 0)
                 size += len(self.output[tmp])
             tmp += 1
         return (True, size)
 
     def fix_line(self, line, size):
-        data = self.output[line].split(":")
+        data = self.output[line].split(':')
         (bits, target) = [int(x) for x in data[0][6:].split(',')]
         data = ':'.join(data[1:])
 
@@ -540,7 +541,7 @@ class Parser:
     def fixme_lines(self):
         flines = []
         for c in self.output:
-            if self.output[c][:5] == "FIXME":
+            if self.output[c][:5] == Parser.__MAGIC_JUMP:
                 flines.append(c)
         return flines
 
@@ -578,6 +579,6 @@ if __name__ == '__main__':
     p = Parser(data)
     p.parse()
 
-    print "Code:\n%s" % (p)
+    print ('Code:\n%s' % (p))
     with open(sys.argv[2], 'w') as f:
         f.write(p.generate())
