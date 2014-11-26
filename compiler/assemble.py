@@ -135,9 +135,9 @@ class Parser:
         65409
         >>> p.raw_number_neg(-200)
         65336
-        >>> p.raw_number_neg(-40000)
-        4294927296L
-        >>> p.raw_number_neg(1) # doctest: +ELLIPSIS
+        >>> p.raw_number_neg(-40000) # doctest: +ELLIPSIS
+        4294927296...
+        >>> p.raw_number_neg(1) # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
         ValueError: Invalid logic, number should not be positive
@@ -145,11 +145,12 @@ class Parser:
         if num >= 0:
             raise ValueError('Invalid logic, number should not be positive')
 
-        if ctypes.c_uint8(-num).value == -num and -num < 0xff/2:
+        #print (ctypes.c_uint8(-num).value, -num, int(0xff/2))
+        if ctypes.c_uint8(-num).value == -num and -num < int(0xff/2):
             return ctypes.c_uint8(num).value
-        if ctypes.c_uint16(-num).value == -num and -num < 0xffff/2:
+        if ctypes.c_uint16(-num).value == -num and -num < int(0xffff/2):
             return ctypes.c_uint16(num).value
-        if ctypes.c_uint32(-num).value == -num and -num < 0xffffffff/2:
+        if ctypes.c_uint32(-num).value == -num and -num < int(0xffffffff/2):
             return ctypes.c_uint32(num).value
 
         return ctypes.c_uint64(num).value
@@ -206,7 +207,7 @@ class Parser:
         (4, 'ABCD')
         >>> p.fill_to_bytes('ABCDE')
         (8, '\\x00\\x00\\x00ABCDE')
-        >>> p.fill_to_bytes('ABCDEFGHI') # doctest: +ELLIPSIS
+        >>> p.fill_to_bytes('ABCDEFGHI') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
         ParseError: Invalid number ABCDEFGHI @0
@@ -265,11 +266,11 @@ class Parser:
     def parse_reg(self, regdata):
         """
         >>> p = Parser('')
-        >>> p.parse_reg('a') # doctest: +ELLIPSIS
+        >>> p.parse_reg('a') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
         ParseError: Invalid register: A @0
-        >>> p.parse_reg('r') # doctest: +ELLIPSIS
+        >>> p.parse_reg('r') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
         ValueError: invalid literal for int() with base 10: ''
@@ -327,7 +328,7 @@ class Parser:
         'aa\\naa'
         >>> p.format_string('aa\\\\"naa')
         'aa"naa'
-        >>> p.format_string('aa\\\\fbb') # doctest: +ELLIPSIS
+        >>> p.format_string('aa\\\\fbb') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
         ParseError: Invalid escape: \\f @0
@@ -369,15 +370,15 @@ class Parser:
         >>> p.code = ''
         >>> p.parse_store('R11, 123456789')
         '\\x04\\x0b\\x07[\\xcd\\x15'
-        >>> p.parse_store('') # doctest: +ELLIPSIS
+        >>> p.parse_store('') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
         ParseError: Invalid number argument for STORE: 1 () @0
-        >>> p.parse_store('R1') # doctest: +ELLIPSIS
+        >>> p.parse_store('R1') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
         ParseError: Invalid number argument for STORE: 1 (R1) @0
-        >>> p.parse_store('R1, R2, 3') # doctest: +ELLIPSIS
+        >>> p.parse_store('R1, R2, 3') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
         ParseError: Invalid number argument for STORE: 3 (R1, R2, 3) @0
@@ -430,19 +431,19 @@ class Parser:
     def parse_print(self, opts):
         """
         >>> p = Parser('')
-        >>> p.parse_print('') # doctest: +ELLIPSIS
+        >>> p.parse_print('') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
         ParseError: No mandatory parameter given for PRINT
-        >>> p.parse_print('a') # doctest: +ELLIPSIS
+        >>> p.parse_print('a') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
         ParseError: Unsupported PRINT: a @0
-        >>> p.parse_print('"a"') # doctest: +ELLIPSIS
+        >>> p.parse_print('"a"') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
         ParseError: Unsupported PRINT: "a" @0
-        >>> p.parse_print('R0') # doctest: +ELLIPSIS
+        >>> p.parse_print('R0') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
         ParseError: Using unused register for PRINT: R0 @0
@@ -484,7 +485,7 @@ class Parser:
     def parse_inc(self, opts):
         """
         >>> p = Parser('')
-        >>> p.parse_inc('') # doctest: +ELLIPSIS
+        >>> p.parse_inc('') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
         ParseError: No mandatory parameter given for INC
@@ -493,11 +494,11 @@ class Parser:
         >>> p.code = ''
         >>> p.parse_inc('R18')
         '\\x08\\x12'
-        >>> p.parse_inc('a') # doctest: +ELLIPSIS
+        >>> p.parse_inc('a') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
         ParseError: Unsupported INC: a @0
-        >>> p.parse_inc('PC') # doctest: +ELLIPSIS
+        >>> p.parse_inc('PC') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
         ParseError: Unsupported INC: PC @0
@@ -517,7 +518,7 @@ class Parser:
     def parse_dec(self, opts):
         """
         >>> p = Parser('')
-        >>> p.parse_dec('') # doctest: +ELLIPSIS
+        >>> p.parse_dec('') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
         ParseError: No mandatory parameter given for DEC
@@ -526,7 +527,7 @@ class Parser:
         >>> p.code = ''
         >>> p.parse_dec('R18')
         '\\t\\x12'
-        >>> p.parse_dec('PC') # doctest: +ELLIPSIS
+        >>> p.parse_dec('PC') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
         ParseError: Unsupported DEC: PC @0
@@ -546,7 +547,7 @@ class Parser:
     def parse_target(self, target):
         """
         >>> p = Parser('')
-        >>> p.parse_target('') # doctest: +ELLIPSIS
+        >>> p.parse_target('') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
         ParseError: Invalid target
@@ -558,8 +559,8 @@ class Parser:
         ('imm', 123)
         >>> p.parse_target('0')
         ('imm', 0)
-        >>> p.parse_target('label') is None
-        True
+        >>> p.parse_target('label')
+        (None, None)
         >>> p.labels['label'] = 17
         >>> p.labels['label2'] = 42
         >>> p.parse_target('label')
@@ -575,7 +576,7 @@ class Parser:
         if target.isdigit():
             return ('imm', int(target))
 
-        return None
+        return (None, None)
 
     def find_output(self, pos):
         """
@@ -654,6 +655,28 @@ class Parser:
         return (True, (jlen + 10) * 10)
 
     def parse_jmp(self, opts):
+        """
+        >>> p = Parser('')
+        >>> p.parse_jmp('') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        ...
+        ParseError: Invalid target
+        >>> p.parse_jmp('R1') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        ...
+        ParseError: Unimplemented jump to target: R1
+        >>> p.parse_jmp('R1 < R2, label') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        ...
+        ParseError: Unsupported JMP target: label @0
+        >>> p.labels['label'] = 1
+        >>> p.labels['label2'] = 20
+        >>> p.line = 4
+        >>> p.parse_jmp('R1 < R2, label')
+        '\\x18\\x01\\x01\\x02\\x01'
+        >>> p.parse_jmp('R1 < R2, label2')
+        'FIXME 1,20:\\x18\\x01\\x01\\x02\\x01\\x18\\x01\\x01\\x02'
+        """
         data = [x.strip() for x in opts.split(',')]
         if len(data) == 2:
             cmp_ops = [x.strip() for x in data[0].split(' ')]
@@ -709,9 +732,13 @@ class Parser:
                 raise ParseError('Unsupported JMP target: %s @%s' % (data[1], self.line))
 
         elif len(data) == 1:
-            target = self.parse_target(data[1].strip())
+            target = self.parse_target(data[0].strip())
+            print (target)
+            raise ParseError('Unimplemented jump to target: %s' % (data[0]))
         else:
             raise ParseError('Invalid JMP: %s @%s' % (opts, self.line))
+
+        return self.code
 
     def parse_db(self, opts):
         data = [x.strip() for x in opts.split(',')]
