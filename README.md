@@ -30,6 +30,16 @@ You need C++11 capable compiler and CMake.
     make test
 
 
+
+## Assembler
+
+Assembler is provided to translate symbolic programs (see examples/ folder) to executable binary.
+Requires Python 2.7+
+
+Supports only subset of MinVM features, but suits already for many cases. Target is to improve it
+gradually full blown tool.
+
+
 ## License
 
 MIT
