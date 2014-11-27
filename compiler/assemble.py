@@ -626,9 +626,9 @@ class Parser:
         >>> p.estimate_jump_len(2)
         (False, -4)
         >>> p.estimate_jump_len(8)
-        (True, 110)
+        (True, 65)
         >>> p.estimate_jump_len(100)
-        (True, 290)
+        (True, 600)
         """
         diff = target_line - self.line
 
@@ -637,10 +637,12 @@ class Parser:
         s = min(target_line, self.line)
         s_end = max(target_line, self.line)
         jlen = 0
+        estlines = 0
         while s < s_end:
             outp = self.find_output(s)
             s += 1
             if outp is None:
+                estlines += 1
                 continue
             jlen += len(outp)
             if Parser.__MAGIC_JUMP in outp:
@@ -652,7 +654,7 @@ class Parser:
 
         # Just estimate roughly upwards.
         # Does not result optimal code, but it should work in most cases
-        return (True, (jlen + 10) * 10)
+        return (True, (jlen + 10 + estlines) * 5)
 
     def parse_jmp(self, opts):
         """
@@ -674,8 +676,18 @@ class Parser:
         >>> p.line = 4
         >>> p.parse_jmp('R1 < R2, label')
         '\\x18\\x01\\x01\\x02\\x01'
+        >>> p.code = ''
         >>> p.parse_jmp('R1 < R2, label2')
-        'FIXME 1,20:\\x18\\x01\\x01\\x02\\x01\\x18\\x01\\x01\\x02'
+        'FIXME 1,20:\\x18\\x01\\x01\\x02'
+        >>> p.code = ''
+        >>> p.labels['label2'] = 2000
+        >>> p.parse_jmp('R1 < R2, label2')
+        'FIXME 2,2000:\\x19\\x01\\x01\\x02'
+        >>> p.code = ''
+        >>> p.parse_jmp('R1 R2, label2') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        ...
+        ParseError: Unsupported JMP: R1 R2, label2 @4
         """
         data = [x.strip() for x in opts.split(',')]
         if len(data) == 2:
@@ -741,6 +753,29 @@ class Parser:
         return self.code
 
     def parse_db(self, opts):
+        """
+        >>> p = Parser('')
+        >>> p.parse_db('')
+        ''
+        >>> p.parse_db('a, b') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        ...
+        ParseError: Invalid DB data: a, b @0
+        >>> p.parse_db('"a"')
+        'a'
+        >>> p.code = ''
+        >>> p.parse_db('"a", "bcde"')
+        'abcde'
+        >>> p.code = ''
+        >>> p.parse_db('1, 2, 4, 6')
+        '\\x01\\x02\\x04\\x06'
+        >>> p.code = ''
+        >>> p.parse_db('0x42, 0x12')
+        'B\\x12'
+        >>> p.code = ''
+        >>> p.parse_db("'a', 'cd'")
+        'acd'
+        """
         data = [x.strip() for x in opts.split(',')]
         for val in data:
             if not val:
@@ -753,8 +788,31 @@ class Parser:
                 self.code += self.output_num(int(val, 16), False)
             elif val.isdigit():
                 self.code += self.output_num(int(val), False)
+            else:
+                raise ParseError('Invalid DB data: %s @%s' % (opts, self.line))
+        return self.code
 
     def stub_2regs(self, opcode, name, opts):
+        """
+        >>> p = Parser('')
+        >>> p.stub_2regs(8, 'name', 'R1, R2')
+        '\\x08\\x01\\x02'
+        >>> p.stub_2regs(8, 'name', 'a, b') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        ...
+        ParseError: Invalid register: A @0
+        >>> p.stub_2regs(8, '', '') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        ...
+        ParseError: Unsupported :  @0
+        >>> p.stub_2regs(8, 'name', '') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        ...
+        ParseError: Unsupported name:  @0
+        >>> p.code = ''
+        >>> p.stub_2regs(8, 'name', 'R6, R0')
+        '\\x08\\x06\\x00'
+        """
         data = [x.strip() for x in opts.split(',')]
         if len(data) == 2:
             reg1 = self.parse_reg(data[0])
@@ -766,7 +824,33 @@ class Parser:
         else:
             raise ParseError('Unsupported %s: %s @%s' % (name, opts, self.line))
 
+        return self.code
+
     def stub_3regs(self, opcode, name, opts):
+        """
+        >>> p = Parser('')
+        >>> p.stub_3regs(8, 'name', 'R1, R2') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        ...
+        ParseError: Unsupported name: R1, R2 @0
+        >>> p.stub_3regs(8, 'name', 'R1, R2, R3')
+        '\\x08\\x01\\x02\\x03'
+        >>> p.stub_3regs(8, 'name', 'a, b, c') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        ...
+        ParseError: Invalid register: A @0
+        >>> p.stub_3regs(8, '', '') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        ...
+        ParseError: Unsupported :  @0
+        >>> p.stub_3regs(8, 'name', '') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        ...
+        ParseError: Unsupported name:  @0
+        >>> p.code = ''
+        >>> p.stub_3regs(8, 'name', 'R6, R0, R7')
+        '\\x08\\x06\\x00\\x07'
+        """
         data = [x.strip() for x in opts.split(',')]
         if len(data) == 3:
             reg1 = self.parse_reg(data[0])
@@ -780,74 +864,129 @@ class Parser:
         else:
             raise ParseError('Unsupported %s: %s @%s' % (name, opts, self.line))
 
+        return self.code
+
     def parse_mov(self, opts):
-        self.stub_2regs(opcodes.MOV, 'MOV', opts)
+        return self.stub_2regs(opcodes.MOV, 'MOV', opts)
 
     def parse_add(self, opts):
-        self.stub_3regs(opcodes.ADD_INT, 'ADD', opts)
+        return self.stub_3regs(opcodes.ADD_INT, 'ADD', opts)
 
     def parse_sub(self, opts):
-        self.stub_3regs(opcodes.SUB_INT, 'SUB', opts)
+        return self.stub_3regs(opcodes.SUB_INT, 'SUB', opts)
 
     def parse_mul(self, opts):
-        self.stub_3regs(opcodes.MUL_INT, 'MUL', opts)
+        return self.stub_3regs(opcodes.MUL_INT, 'MUL', opts)
 
     def parse_div(self, opts):
-        self.stub_3regs(opcodes.DIV_INT, 'DIV', opts)
+        return self.stub_3regs(opcodes.DIV_INT, 'DIV', opts)
 
     def parse_mod(self, opts):
-        self.stub_3regs(opcodes.MOD_INT, 'MOD', opts)
+        return self.stub_3regs(opcodes.MOD_INT, 'MOD', opts)
 
     def parse_command(self, cmd, opts):
+        """
+        >>> p = Parser('')
+        >>> p.parse_command('STORE', 'R1, 1')
+        '\\x02\\x01\\x01'
+        >>> p.code = ''
+        >>> p.parse_command('PRINT', 'R1')
+        '\\x0f\\x01'
+        >>> p.code = ''
+        >>> p.parse_command('ADD', 'R3, R1, R0')
+        '\\n\\x03\\x01\\x00'
+        >>> p.code = ''
+        >>> p.parse_command('NONE', '') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        ...
+        ParseError: Unsupported command: NONE @0
+        """
         cmd = cmd.upper()
         if cmd == 'STORE':
-            self.parse_store(opts)
+            return self.parse_store(opts)
         elif cmd == 'PRINT':
-            self.parse_print(opts)
+            return self.parse_print(opts)
         elif cmd == 'INC':
-            self.parse_inc(opts)
+            return self.parse_inc(opts)
         elif cmd == 'DEC':
-            self.parse_dec(opts)
+            return self.parse_dec(opts)
         elif cmd == 'JMP':
-            self.parse_jmp(opts)
+            return self.parse_jmp(opts)
         elif cmd == 'MOV':
-            self.parse_mov(opts)
+            return self.parse_mov(opts)
         elif cmd == 'ADD':
-            self.parse_add(opts)
+            return self.parse_add(opts)
         elif cmd == 'SUB':
-            self.parse_sub(opts)
+            return self.parse_sub(opts)
         elif cmd == 'MUL':
-            self.parse_mul(opts)
+            return self.parse_mul(opts)
         elif cmd == 'DIV':
-            self.parse_div(opts)
+            return self.parse_div(opts)
         elif cmd == 'MOD':
-            self.parse_mod(opts)
+            return self.parse_mod(opts)
         elif cmd == 'DB':
-            self.parse_db(opts)
+            return self.parse_db(opts)
         elif cmd == 'STOP':
             self.code += chr(opcodes.STOP)
         else:
-            print (cmd, opts)
+            raise ParseError('Unsupported command: %s @%s' % (cmd, self.line))
+            #print (cmd, opts)
+        return self.code
 
     def pre_parse_line(self, line):
+        """
+        >>> p = Parser('')
+        >>> p.labels
+        {}
+        >>> p.pre_parse_line('a')
+        >>> p.labels
+        {}
+        >>> p.debug = False
+        >>> p.pre_parse_line('a:')
+        >>> p.labels
+        {'a': 0}
+        """
         datas = line.split(':')
         if len(datas) >= 2 and self.parse_label(datas[0]):
             return
 
     def parse_line(self, line):
+        """
+        >>> p = Parser('')
+        >>> p.debug = False
+        >>> p.parse_line('a') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        ...
+        ParseError: Unsupported command: NONE @0
+        >>> p.parse_line('STORE R1, 0')
+        '\\x02\\x01\\x00'
+        >>> p.parse_line('') is None
+        True
+        >>> p.code = ''
+        >>> p.labels
+        {}
+        >>> p.parse_line('tst: STORE R1, 0')
+        '\\x02\\x01\\x00'
+        >>> p.labels
+        {'tst': 0}
+        """
+        if not line:
+            return None
         datas = line.split(':')
         if len(datas) >= 2 and self.parse_label(datas[0]):
             line = ':'.join(datas[1:]).strip()
-        if not line:
-            return
 
         cmds = line.split(' ')
         if not cmds:
-            return
+            return None
 
-        self.parse_command(cmds[0], ' '.join(cmds[1:]))
+        return self.parse_command(cmds[0], ' '.join(cmds[1:]))
 
     def pre_parse(self):
+        """
+        >>> p = Parser('')
+        >>> p.pre_parse()
+        """
         for self.line, line in enumerate(self.data):
             line = line.strip()
             if not line or line[0] == ';':
@@ -855,6 +994,27 @@ class Parser:
             self.pre_parse_line(line)
 
     def try_fix(self, line):
+        """
+        >>> p = Parser('')
+        >>> p.try_fix('')
+        (False, 0)
+        >>> p.try_fix('test: t') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        ...
+        ParseError: Invalid data
+        >>> p.output[1] = 'a'
+        >>> p.try_fix(1) # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        ...
+        ValueError: invalid literal for int() with base 10: ''
+        >>> p.output[1] = 'FIXME 1, 2: a'
+        >>> p.try_fix(1) # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+        (True, 0)
+        """
+        if not line:
+            return (False, 0)
+        if line not in self.output:
+            raise ParseError('Invalid data')
         data = self.output[line].split(':')
         (bits, target) = [int(x) for x in data[0][6:].split(',')]
 
@@ -869,6 +1029,14 @@ class Parser:
         return (True, size)
 
     def fix_line(self, line, size):
+        """
+        >>> p = Parser('')
+        >>> p.fix_line('', 0)
+        >>> p.output[1] = 'FIXME 1, 2: a'
+        >>> p.fix_line(1, 0)
+        """
+        if not line:
+            return
         data = self.output[line].split(':')
         (bits, target) = [int(x) for x in data[0][6:].split(',')]
         data = ':'.join(data[1:])
@@ -879,12 +1047,23 @@ class Parser:
         self.output[line] = data + num
 
     def try_fixes(self, lines):
+        """
+        >>> p = Parser('')
+        >>> p.try_fixes([])
+        >>> p.output[1] = 'FIXME 1, 2: a'
+        >>> p.try_fixes([1])
+        """
         for l in lines:
             (res, size) = self.try_fix(l)
             if res:
                 self.fix_line(l, size)
 
     def fixme_lines(self):
+        """
+        >>> p = Parser('')
+        >>> p.fixme_lines()
+        []
+        """
         flines = []
         for c in self.output:
             if self.output[c][:5] == Parser.__MAGIC_JUMP:
@@ -892,6 +1071,10 @@ class Parser:
         return flines
 
     def fix_fixmes(self):
+        """
+        >>> p = Parser('')
+        >>> p.fix_fixmes()
+        """
         flines = self.fixme_lines()
         tries = 0
         while flines:
@@ -902,6 +1085,10 @@ class Parser:
                 break
 
     def parse(self):
+        """
+        >>> p = Parser('')
+        >>> p.parse()
+        """
         self.pre_parse()
         for self.line, line in enumerate(self.data):
             self.code = ''
