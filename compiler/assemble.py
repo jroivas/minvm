@@ -887,6 +887,8 @@ class Parser:
     def parse_command(self, cmd, opts):
         """
         >>> p = Parser('')
+        >>> p.parse_command('', '') is None
+        True
         >>> p.parse_command('STORE', 'R1, 1')
         '\\x02\\x01\\x01'
         >>> p.code = ''
@@ -901,8 +903,10 @@ class Parser:
         ...
         ParseError: Unsupported command: NONE @0
         """
-        cmd = cmd.upper()
-        if cmd == 'STORE':
+        cmd = cmd.upper().strip()
+        if cmd == '':
+            return None
+        elif cmd == 'STORE':
             return self.parse_store(opts)
         elif cmd == 'PRINT':
             return self.parse_print(opts)
