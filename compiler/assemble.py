@@ -1,14 +1,11 @@
 #!/usr/bin/python
 
+import argparse
+import collections
 import ctypes
+import math
 import opcodes
 import sys
-import math
-import collections
-
-def read(fname):
-    with open(fname, 'r') as f:
-        return f.readlines()
 
 class ParseError(Exception):
     def __init__(self, value):
@@ -1108,14 +1105,18 @@ class Parser:
         self.fix_fixmes()
 
 if __name__ == '__main__':
-    if len(sys.argv) <= 2:
-        print ('Usage: %s input.asm output.bin' % (sys.argv[0]))
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description='Assembler for MinVM')
+    parser.add_argument('-q', '--quiet', action='store_true')
+    parser.add_argument('input', type=argparse.FileType('rb'))
+    parser.add_argument('output', type=argparse.FileType('wb'))
+    res = vars(parser.parse_args())
 
-    data = read(sys.argv[1])
+    data = res['input'].readlines()
     p = Parser(data)
+    if res['quiet']:
+        p.debug = False
     p.parse()
 
-    print ('Code:\n%s' % (p))
-    with open(sys.argv[2], 'w') as f:
-        f.write(p.generate())
+    if not res['quiet']:
+        print ('Code:\n%s' % (p))
+    res['output'].write(p.generate())
