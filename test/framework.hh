@@ -80,7 +80,7 @@ public:
         stop();
     }
 
-    void start(bool reset=false);
+    void start(bool do_reset=false);
     void stop();
     void reset();
 

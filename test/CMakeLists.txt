@@ -9,6 +9,7 @@ add_executable(test_runner
     random.cpp
     mov.cpp
     ints.cpp
+    strs.cpp
     )
 target_link_libraries(test_runner core)
 target_link_libraries(test_runner impl)
