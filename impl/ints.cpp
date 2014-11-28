@@ -154,13 +154,14 @@ bool Ints::div_int(core::VM *vm)
     uint8_t reg2 = vm->fetch8();
     uint8_t reg3 = vm->fetch8();
 
-    if (reg3 == 0)
+    uint64_t val1 = vm->regs().load_int(reg2);
+    uint64_t val2 = vm->regs().load_int(reg3);
+
+    if (val2 == 0)
         throw std::string("Divide by zero!");
 
     vm->regs().store_int(
-        reg1,
-        vm->regs().load_int(reg2) /
-        vm->regs().load_int(reg3));
+        reg1, val1 / val2);
 
     return true;
 }
@@ -172,13 +173,14 @@ bool Ints::mod_int(core::VM *vm)
     uint8_t reg2 = vm->fetch8();
     uint8_t reg3 = vm->fetch8();
 
-    if (reg3 == 0)
+    uint64_t val1 = vm->regs().load_int(reg2);
+    uint64_t val2 = vm->regs().load_int(reg3);
+
+    if (val2 == 0)
         throw std::string("Divide by zero!");
 
     vm->regs().store_int(
-        reg1,
-        vm->regs().load_int(reg2) %
-        vm->regs().load_int(reg3));
+        reg1, val1 % val2);
 
     return true;
 }
@@ -187,7 +189,6 @@ bool Ints::print_int(VM *vm)
 {
     if (vm->debug()) std::cerr << "PRINT_INT\n";
     uint8_t reg = vm->fetch8();
-    //std::cout << vm->regs().load_int(reg) << "\n";
     std::cout << vm->regs().load_int(reg);
     return true;
 }

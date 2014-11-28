@@ -122,3 +122,29 @@ std::string test_stats()
     res += "Total tests      : " + std::to_string(__fail_cnt + __success_cnt)+ "\n";
     return res;
 }
+
+void StdoutCatcher::start(bool do_reset)
+{
+    m_buf = std::cout.rdbuf();
+
+    if (do_reset) reset();
+    std::cout.rdbuf(m_stream.rdbuf());
+}
+
+void StdoutCatcher::stop()
+{
+    if (m_buf == nullptr)
+        return;
+
+    std::cout.rdbuf(m_buf);
+}
+
+void StdoutCatcher::reset()
+{
+    m_stream.str("");
+}
+
+std::string StdoutCatcher::get() const
+{
+    return m_stream.str();
+}

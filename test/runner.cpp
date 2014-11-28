@@ -8,6 +8,7 @@ int main(int argc, char **argv)
     REGISTER_TEST(vm);
     REGISTER_TEST(random);
     REGISTER_TEST(mov);
+    REGISTER_TEST(ints);
 
     unsigned int res = 0;
     try {

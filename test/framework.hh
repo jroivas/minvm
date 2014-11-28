@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <iostream>
+#include <sstream>
 
 void register_test_function(std::string name, std::function<void(void)> test);
 unsigned int run_tests();
@@ -70,3 +71,22 @@ catch (EXPTYPE e)\
         fail();\
     }\
 }
+
+class StdoutCatcher
+{
+public:
+    StdoutCatcher() : m_buf(nullptr) {}
+    ~StdoutCatcher() {
+        stop();
+    }
+
+    void start(bool reset=false);
+    void stop();
+    void reset();
+
+    std::string get() const;
+
+private:
+    std::streambuf *m_buf;
+    std::ostringstream m_stream;
+};
