@@ -65,6 +65,7 @@ public:
     {
         return m_size;
     }
+    uint8_t mem(uint64_t pos) const;
 
 private:
     static bool nop(VM *)

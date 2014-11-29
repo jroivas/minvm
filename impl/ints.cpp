@@ -34,9 +34,20 @@ bool Ints::load_int_mem(core::VM *vm)
 
     uint8_t reg = vm->fetch8();
     uint8_t size = vm->fetch8();
-    //uint64_t pos = vm->fetch64();
+    if (size > 8)
+        throw std::string("Invalid size: ") + std::to_string((int)size);
+
+    uint64_t pos = 0;
+    for (int i = 0; i < 8; ++i) {
+        pos <<= 8;
+        pos |= vm->fetch8();
+    }
 
     uint64_t val = 0;
+    for (uint8_t cnt = 0; cnt < size; ++cnt) {
+        val <<= 8;
+        val |= vm->mem(pos + cnt);
+    }
 
     vm->regs().put_int(reg, val);
 

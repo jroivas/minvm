@@ -112,3 +112,15 @@ core::Heap &VM::heap(uint64_t pos)
 
     throw std::string("Invalid heap access");
 }
+
+uint8_t VM::mem(uint64_t pos) const
+{
+/*
+    if (pos >= m_size)
+        throw std::string("Memory access out of bounds");
+*/
+    if (pos >= m_size)
+        return get_heap(pos - m_size);
+
+    return m_mem[pos];
+}

@@ -2,6 +2,7 @@
 #include <vm.hh>
 #include <opcodes.hh>
 #include <ints.hh>
+#include <iomanip>
 
 static void test_ints_load_int8()
 {
@@ -56,6 +57,82 @@ static void test_ints_load_int64()
     assert(vm.regs().get_int(1) == 0);
     assert(vm.step());
     assert(vm.regs().get_int(1) == 0x4233211501020304);
+}
+
+static uint8_t mem2[] = {
+    (uint8_t)core::Opcode::LOAD_INT_MEM,
+        5, 1, 0, 0, 0, 0, 0, 0, 0, 12,
+    (uint8_t)core::Opcode::STOP,
+    0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x50
+};
+
+static void test_ints_load_int_mem_1byte()
+{
+    core::VM vm((uint8_t*)mem2, sizeof(mem2));
+    mem2[2] = 1;
+    impl::Ints ints(&vm);
+
+    assert(vm.regs().get_int(5) == 0);
+    assert(vm.step());
+    assert(vm.regs().get_int(5) == 0x42);
+}
+
+static void test_ints_load_int_mem_2bytes()
+{
+    core::VM vm((uint8_t*)mem2, sizeof(mem2));
+    mem2[2] = 2;
+    impl::Ints ints(&vm);
+
+    assert(vm.regs().get_int(5) == 0);
+    assert(vm.step());
+    assert(vm.regs().get_int(5) == 0x4243);
+}
+
+static void test_ints_load_int_mem_3bytes()
+{
+    core::VM vm((uint8_t*)mem2, sizeof(mem2));
+    mem2[2] = 3;
+    impl::Ints ints(&vm);
+
+    assert(vm.regs().get_int(5) == 0);
+    assert(vm.step());
+    assert(vm.regs().get_int(5) == 0x424344);
+}
+
+static void test_ints_load_int_mem_4bytes()
+{
+    core::VM vm((uint8_t*)mem2, sizeof(mem2));
+    mem2[2] = 4;
+    impl::Ints ints(&vm);
+
+    assert(vm.regs().get_int(5) == 0);
+    assert(vm.step());
+    assert(vm.regs().get_int(5) == 0x42434445);
+}
+
+static void test_ints_load_int_mem_8bytes()
+{
+    core::VM vm((uint8_t*)mem2, sizeof(mem2));
+    mem2[2] = 8;
+    impl::Ints ints(&vm);
+
+    assert(vm.regs().get_int(5) == 0);
+    assert(vm.step());
+    assert(vm.regs().get_int(5) == 0x4243444546474849);
+}
+
+static void test_ints_load_int_mem_9bytes()
+{
+    core::VM vm((uint8_t*)mem2, sizeof(mem2));
+    mem2[2] = 9;
+
+    impl::Ints ints(&vm);
+    assert(vm.regs().get_int(5) == 0);
+
+    assertThrows(
+        std::string,
+        "Invalid size: 9",
+        vm.step());
 }
 
 static void test_ints_inc()
@@ -335,6 +412,13 @@ void test_ints()
     TEST_CASE(test_ints_load_int16);
     TEST_CASE(test_ints_load_int32);
     TEST_CASE(test_ints_load_int64);
+
+    TEST_CASE(test_ints_load_int_mem_1byte);
+    TEST_CASE(test_ints_load_int_mem_2bytes);
+    TEST_CASE(test_ints_load_int_mem_3bytes);
+    TEST_CASE(test_ints_load_int_mem_4bytes);
+    TEST_CASE(test_ints_load_int_mem_8bytes);
+    TEST_CASE(test_ints_load_int_mem_9bytes);
 
     TEST_CASE(test_ints_inc);
     TEST_CASE(test_ints_dec);
