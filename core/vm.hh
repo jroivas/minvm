@@ -4,6 +4,7 @@
 
 #include "regs.hh"
 #include "opcodes.hh"
+#include "heap.hh"
 
 namespace core
 {
@@ -44,6 +45,9 @@ public:
     {
         return m_regs;
     }
+    void add_heap(uint64_t size);
+    bool is_heap(uint64_t pos) const;
+    uint8_t heap(uint64_t pos);
 
 private:
     static bool nop(VM *)
@@ -60,6 +64,10 @@ private:
     Registers m_regs;
     uint8_t *m_mem;
     uint64_t m_size;
+
+    std::vector<Heap> m_heap;
+    uint64_t m_heap_pos;
+
     bool m_debug;
 };
 

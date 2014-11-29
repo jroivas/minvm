@@ -11,6 +11,7 @@ add_executable(test_runner
     ints.cpp
     strs.cpp
     jump.cpp
+    heap.cpp
     )
 target_link_libraries(test_runner core)
 target_link_libraries(test_runner impl)

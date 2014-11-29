@@ -7,13 +7,15 @@ using core::Opcode;
 
 
 VM::VM() :
-    m_mem(nullptr), m_size(0), m_debug(false)
+    m_mem(nullptr), m_size(0),
+    m_heap_pos(0), m_debug(false)
 {
     init();
 }
 
 VM::VM(uint8_t *mem, uint64_t size) :
-    m_mem(mem), m_size(size), m_debug(false)
+    m_mem(mem), m_size(size),
+    m_heap_pos(0), m_debug(false)
 {
     init();
 }
@@ -56,4 +58,31 @@ bool VM::step()
     Opcode op = fetch();
     //std::cout << (int) op << "\n";
     return m_opcodes[(uint8_t)op](this);
+}
+
+void VM::add_heap(uint64_t size)
+{
+    m_heap.emplace_back(m_heap_pos, size);
+    m_heap_pos += size;
+}
+
+bool VM::is_heap(uint64_t pos) const
+{
+    for (auto &item : m_heap) {
+        if (item.valid(pos)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+uint8_t VM::heap(uint64_t pos)
+{
+    for (auto &item : m_heap) {
+        if (item.valid(pos)) {
+            return item[pos];
+        }
+    }
+
+    throw std::string("Invalid heap access");
 }

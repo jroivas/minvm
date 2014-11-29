@@ -11,6 +11,7 @@ int main(int argc, char **argv)
     REGISTER_TEST(ints);
     REGISTER_TEST(strs);
     REGISTER_TEST(jump);
+    REGISTER_TEST(heap);
 
     unsigned int res = 0;
     try {

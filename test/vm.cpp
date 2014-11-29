@@ -125,6 +125,23 @@ static void test_memory_limits()
         vm.fetch8());
 }
 
+static void test_heap()
+{
+    core::VM vm((uint8_t*)mem3, sizeof(mem3));
+
+    assert(!vm.is_heap(0));
+    assert(!vm.is_heap(1));
+    assert(!vm.is_heap(10));
+    assert(!vm.is_heap(11));
+
+    vm.add_heap(10);
+    assert(vm.is_heap(0));
+    assert(vm.is_heap(1));
+    assert(vm.is_heap(9));
+    assert(!vm.is_heap(10));
+    assert(!vm.is_heap(11));
+}
+
 void test_vm()
 {
     TEST_CASE(test_basic_opcodes);
@@ -133,4 +150,5 @@ void test_vm()
     TEST_CASE(test_memory_step);
     TEST_CASE(test_memory_exe);
     TEST_CASE(test_memory_limits);
+    TEST_CASE(test_heap);
 }

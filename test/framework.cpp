@@ -116,9 +116,21 @@ std::string test_stats()
     res += "------------------\n";
     res += "Test suites run  : " + std::to_string(__suites) + "\n";
     res += "Test cases run   : " + std::to_string(__case_cnt) + "\n";
-    res += "Successful tests : " + std::to_string(__success_cnt) + "\n";
-    res += "Failed tests     : " + std::to_string(__fail_cnt) + "\n";
-    res += "Exceptions       : " + std::to_string(__exceptions) + "\n";
+    res += ((__success_cnt>0)?output_color(color_green):std::string())
+        + "Successful tests : "
+        + std::to_string(__success_cnt)
+        + output_color(color_normal)
+        + "\n";
+    res += ((__fail_cnt>0)?output_color(color_red):std::string())
+        + "Failed tests     : "
+        + std::to_string(__fail_cnt)
+        + output_color(color_normal)
+        + "\n";
+    res += ( __exceptions>0?output_color(color_red):std::string())
+        + "Exceptions       : "
+        + std::to_string(__exceptions)
+        + output_color(color_normal)
+        + "\n";
     res += "Total tests      : " + std::to_string(__fail_cnt + __success_cnt)+ "\n";
     return res;
 }
