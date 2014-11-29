@@ -142,10 +142,9 @@ bool Jump::jump_int(core::VM *vm)
     if (vm->debug()) std::cerr << "JUMP_INT\n";
 
     int8_t reg = vm->fetch8();
-    uint64_t diff = vm->regs().load_int(reg);
+    uint64_t pos = vm->regs().load_int(reg);
 
-    vm->regs().pc_update(
-        vm->regs().pc() + diff);
+    vm->regs().pc_update(pos);
 
     return true;
 }
@@ -256,11 +255,11 @@ bool Jump::jump_le_int(core::VM *vm)
     bool cond = conditional(vm, oper, reg1, reg2);
 
     int8_t reg = vm->fetch8();
-    uint64_t diff = vm->regs().load_int(reg);
+    uint64_t pos = vm->regs().load_int(reg);
 
     jump_conditional(
         vm,
-        diff,
+        pos,
         cond);
 
     return true;

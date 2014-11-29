@@ -10,6 +10,7 @@ add_executable(test_runner
     mov.cpp
     ints.cpp
     strs.cpp
+    jump.cpp
     )
 target_link_libraries(test_runner core)
 target_link_libraries(test_runner impl)
