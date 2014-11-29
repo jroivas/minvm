@@ -76,11 +76,34 @@ bool VM::is_heap(uint64_t pos) const
     return false;
 }
 
-uint8_t VM::heap(uint64_t pos)
+uint8_t VM::get_heap(uint64_t pos) const
 {
     for (auto &item : m_heap) {
         if (item.valid(pos)) {
             return item[pos];
+        }
+    }
+
+    throw std::string("Invalid heap access");
+}
+
+void VM::set_heap(uint64_t pos, uint8_t val)
+{
+    for (auto &item : m_heap) {
+        if (item.valid(pos)) {
+            item[pos] = val;
+            return;
+        }
+    }
+
+    throw std::string("Invalid heap access");
+}
+
+core::Heap &VM::heap(uint64_t pos)
+{
+    for (auto &item : m_heap) {
+        if (item.valid(pos)) {
+            return item;
         }
     }
 

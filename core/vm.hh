@@ -47,7 +47,9 @@ public:
     }
     void add_heap(uint64_t size);
     bool is_heap(uint64_t pos) const;
-    uint8_t heap(uint64_t pos);
+    uint8_t get_heap(uint64_t pos) const;
+    void set_heap(uint64_t pos, uint8_t val);
+    Heap &heap(uint64_t pos);
 
 private:
     static bool nop(VM *)

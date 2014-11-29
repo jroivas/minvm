@@ -25,7 +25,16 @@ static void test_heap_access()
     assert(h.pos() == 5);
     assert(h.size() == 10);
 
+    assert(h[5] == 0);
     assert(h[6] == 0);
+    assert(h[7] == 0);
+    assert(h[8] == 0);
+    assert(h[9] == 0);
+    assert(h[10] == 0);
+    assert(h[11] == 0);
+    assert(h[12] == 0);
+    assert(h[13] == 0);
+    assert(h[14] == 0);
     h[6] = 42;
     assert(h[6] == 42);
 

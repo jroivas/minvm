@@ -125,9 +125,9 @@ static void test_memory_limits()
         vm.fetch8());
 }
 
-static void test_heap()
+static void test_heap_add()
 {
-    core::VM vm((uint8_t*)mem3, sizeof(mem3));
+    core::VM vm;
 
     assert(!vm.is_heap(0));
     assert(!vm.is_heap(1));
@@ -142,6 +142,31 @@ static void test_heap()
     assert(!vm.is_heap(11));
 }
 
+static void test_heap_access()
+{
+    core::VM vm;
+
+    vm.add_heap(10);
+
+    assert(vm.get_heap(5) == 0);
+    vm.heap(5)[5] = 55;
+    assert(vm.get_heap(5) == 55);
+
+    assert(vm.get_heap(6) == 0);
+    vm.set_heap(6, 42);
+    assert(vm.get_heap(6) == 42);
+
+    core::Heap &h = vm.heap(5);
+    h[8] = 4;
+    assert(vm.get_heap(8) == 4);
+    assert(h[6] == 42);
+
+    assertThrows(
+        std::string,
+        "Heap memory access out of bounds",
+        h[10]);
+}
+
 void test_vm()
 {
     TEST_CASE(test_basic_opcodes);
@@ -150,5 +175,6 @@ void test_vm()
     TEST_CASE(test_memory_step);
     TEST_CASE(test_memory_exe);
     TEST_CASE(test_memory_limits);
-    TEST_CASE(test_heap);
+    TEST_CASE(test_heap_add);
+    TEST_CASE(test_heap_access);
 }
