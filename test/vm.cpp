@@ -142,6 +142,18 @@ static void test_heap_add()
     assert(!vm.is_heap(11));
 }
 
+static void test_heap_add_double()
+{
+    core::VM vm;
+
+    vm.add_heap(10);
+    assert(vm.heap_size() == 10);
+
+    vm.add_heap(10);
+    assert(vm.heap_size() == 20);
+}
+
+
 static void test_heap_access()
 {
     core::VM vm;
@@ -176,5 +188,6 @@ void test_vm()
     TEST_CASE(test_memory_exe);
     TEST_CASE(test_memory_limits);
     TEST_CASE(test_heap_add);
+    TEST_CASE(test_heap_add_double);
     TEST_CASE(test_heap_access);
 }

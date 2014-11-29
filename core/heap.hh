@@ -1,4 +1,6 @@
 #pragma once
+#include <cstring>
+#include <iostream>
 
 namespace core
 {
@@ -10,6 +12,13 @@ public:
         m_pos(pos), m_size(size)
     {
         m_data = new uint8_t[m_size]();
+    }
+
+    Heap(const Heap &other) :
+        m_pos(other.m_pos), m_size(other.m_size)
+    {
+        m_data = new uint8_t[m_size]();
+        std::memmove(m_data, other.m_data, m_size);
     }
 
     ~Heap()
@@ -31,7 +40,9 @@ public:
 
     inline bool valid(uint64_t index) const
     {
-        return (index >= m_pos) && (index < (m_pos + m_size));
+        return (m_data != nullptr)
+            && (index >= m_pos)
+            && (index < (m_pos + m_size));
     }
 
     uint8_t &operator[](uint64_t index) const

@@ -68,6 +68,7 @@ static void test_heap_add()
     static uint8_t mem[] = {
         (uint8_t)core::Opcode::STORE_INT8, 0, 12,
         (uint8_t)core::Opcode::HEAP, 0,
+        (uint8_t)core::Opcode::HEAP, 0,
     };
 
     core::VM vm((uint8_t*)mem, sizeof(mem));
@@ -77,8 +78,12 @@ static void test_heap_add()
     assert(vm.step());
 
     assert(vm.heap_size() == 0);
+
     assert(vm.step());
     assert(vm.heap_size() == 12);
+
+    assert(vm.step());
+    assert(vm.heap_size() == 12 * 2);
 }
 
 static void test_heap_info()
