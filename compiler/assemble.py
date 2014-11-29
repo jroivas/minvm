@@ -881,6 +881,63 @@ class Parser:
     def parse_mod(self, opts):
         return self.stub_3regs(opcodes.MOD_INT, 'MOD', opts)
 
+    def parse_heap(self, opts):
+        """
+        >>> p = Parser('')
+        >>> p.parse_heap('R1')
+        '\\x1e\\x01'
+        >>> p.parse_heap('1') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        ...
+        ParseError: Invalid register: 1 @0
+        >>> p.parse_heap('') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        ...
+        ParseError: Invalid arguments for HEAP:  @0
+        """
+        opts = opts.strip()
+        if not opts:
+            raise ParseError('Invalid arguments for HEAP: %s @%s' % (opts, self.line))
+        reg = self.parse_reg(opts)
+
+        self.code += chr(opcodes.HEAP)
+        self.code += self.output_num(reg, False)
+        return self.code
+
+    def parse_info(self, opts):
+        """
+        >>> p = Parser('')
+        >>> p.parse_info('R1, 1')
+        '\\x1f\\x01\\x01'
+        >>> p.parse_info('') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        ...
+        ParseError: Unsupported INFO:  @0
+        >>> p.parse_info('1') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        ...
+        ParseError: Unsupported INFO: 1 @0
+        >>> p.parse_info('1, 1') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        ...
+        ParseError: Invalid register: 1 @0
+        """
+        data = [x.strip() for x in opts.split(',')]
+        if len(data) == 2:
+            reg = self.parse_reg(data[0])
+            if not data[1].isdigit():
+                raise ParseError('Invalid argument for INT: %s @%s' % (data[1], self.line))
+            val = int(data[1])
+            self.regmap[reg] = 'int'
+
+            self.code += chr(opcodes.INFO)
+            self.code += self.output_num(reg, False)
+            self.code += self.output_num(val, False)
+        else:
+            raise ParseError('Unsupported INFO: %s @%s' % (opts, self.line))
+
+        return self.code
+
     def parse_command(self, cmd, opts):
         """
         >>> p = Parser('')
@@ -927,6 +984,10 @@ class Parser:
             return self.parse_mod(opts)
         elif cmd == 'DB':
             return self.parse_db(opts)
+        elif cmd == 'HEAP':
+            return self.parse_heap(opts)
+        elif cmd == 'INFO':
+            return self.parse_info(opts)
         elif cmd == 'STOP':
             self.code += chr(opcodes.STOP)
         else:

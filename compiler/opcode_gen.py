@@ -10,20 +10,21 @@ def parse(f):
         if 'Opcode' in line and 'class' in line and 'enum' in line:
             got_list = True
             continue
-        if '{' in line:
-            continue
-        if '}' in line:
-            return
+        elif got_list:
+            if '{' in line:
+                continue
+            if '}' in line:
+                return
 
-        line = line.replace(',','').strip()
-        if '=' in line:
-            tmp = line.split('=')
-            line = tmp[0].strip()
-            code = int(tmp[1])
+            line = line.replace(',','').strip()
+            if '=' in line:
+                tmp = line.split('=')
+                line = tmp[0].strip()
+                code = int(tmp[1])
 
-        if line and got_list:
-            print ("%s = %s" % (line, code))
-            code += 1
+            if line and got_list:
+                print ("%s = %s" % (line, code))
+                code += 1
 
 if __name__ == '__main__':
     print ("# Generated opcodes")
