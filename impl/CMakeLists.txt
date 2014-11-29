@@ -3,4 +3,5 @@ add_library(impl STATIC
     strs.cpp
     random.cpp
     jump.cpp
+    heap.cpp
     mov.cpp)

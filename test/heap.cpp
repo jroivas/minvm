@@ -1,5 +1,7 @@
 #include "framework.hh"
-#include <heap.hh>
+#include <core/heap.hh>
+#include <impl/heap.hh>
+#include <impl/ints.hh>
 
 static void test_heap_basic()
 {
@@ -61,9 +63,78 @@ static void test_heap_access_exception()
     assert(h2[0] == 1);
 }
 
+static void test_heap_add()
+{
+    static uint8_t mem[] = {
+        (uint8_t)core::Opcode::STORE_INT8, 0, 12,
+        (uint8_t)core::Opcode::HEAP, 0,
+    };
+
+    core::VM vm((uint8_t*)mem, sizeof(mem));
+    impl::Ints ints(&vm);
+    impl::Heap heaps(&vm);
+
+    assert(vm.step());
+
+    assert(vm.heap_size() == 0);
+    assert(vm.step());
+    assert(vm.heap_size() == 12);
+}
+
+static void test_heap_info()
+{
+    static uint8_t mem[] = {
+        (uint8_t)core::Opcode::INFO, 0, (uint8_t)core::Info::Info,
+        (uint8_t)core::Opcode::INFO, 0, (uint8_t)core::Info::Ticks,
+        (uint8_t)core::Opcode::INFO, 0, (uint8_t)core::Info::HeapSize,
+        (uint8_t)core::Opcode::INFO, 0, (uint8_t)core::Info::HeapSize,
+        (uint8_t)core::Opcode::INFO, 0, (uint8_t)core::Info::HeapStart,
+        (uint8_t)core::Opcode::INFO, 0, (uint8_t)core::Info::Ticks,
+        (uint8_t)core::Opcode::INFO, 0, 0xff
+    };
+    core::VM vm((uint8_t*)mem, sizeof(mem));
+    impl::Heap heaps(&vm);
+
+    // Info
+    assert(vm.regs().load_int(0) == 0);
+    assert(vm.step());
+    assert(vm.regs().load_int(0) == 0xdeadbeef);
+
+    // Ticks
+    assert(vm.step());
+    assert(vm.regs().load_int(0) == 2);
+
+    // HeapSize
+    assert(vm.step());
+    assert(vm.regs().load_int(0) == 0);
+
+    // HeapSize
+    vm.add_heap(20);
+    assert(vm.step());
+    assert(vm.regs().load_int(0) == 20);
+
+    // HeapStart
+    assert(vm.step());
+    assert(vm.regs().load_int(0) == sizeof(mem));
+    assert(vm.regs().load_int(0) == 3 * 7);
+
+    // Ticks
+    assert(vm.step());
+    assert(vm.regs().load_int(0) == 6);
+
+    // 0xff
+    assertThrows(
+        std::string,
+        "Unimplemented info entry: 255",
+        vm.step());
+}
+
 void test_heap()
 {
     TEST_CASE(test_heap_basic);
     TEST_CASE(test_heap_access);
     TEST_CASE(test_heap_access_exception);
+
+    TEST_CASE(test_heap_add);
+    TEST_CASE(test_heap_info);
 }

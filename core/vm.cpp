@@ -8,14 +8,16 @@ using core::Opcode;
 
 VM::VM() :
     m_mem(nullptr), m_size(0),
-    m_heap_pos(0), m_debug(false)
+    m_heap_pos(0), m_ticks(0),
+    m_debug(false)
 {
     init();
 }
 
 VM::VM(uint8_t *mem, uint64_t size) :
     m_mem(mem), m_size(size),
-    m_heap_pos(0), m_debug(false)
+    m_heap_pos(0), m_ticks(0),
+    m_debug(false)
 {
     init();
 }
@@ -56,6 +58,7 @@ Opcode VM::fetch()
 bool VM::step()
 {
     Opcode op = fetch();
+    ++m_ticks;
     //std::cout << (int) op << "\n";
     return m_opcodes[(uint8_t)op](this);
 }

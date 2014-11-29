@@ -8,6 +8,7 @@ add_executable(minvm main.cpp)
 
 include_directories(core)
 include_directories(impl)
+include_directories(.)
 
 add_subdirectory(core)
 add_subdirectory(impl)

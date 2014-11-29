@@ -41,15 +41,30 @@ public:
     {
         return m_debug;
     }
-    Registers &regs()
+
+    inline Registers &regs()
     {
         return m_regs;
     }
+
+    inline uint64_t ticks() const
+    {
+        return m_ticks;
+    }
+
     void add_heap(uint64_t size);
     bool is_heap(uint64_t pos) const;
     uint8_t get_heap(uint64_t pos) const;
     void set_heap(uint64_t pos, uint8_t val);
     Heap &heap(uint64_t pos);
+    inline uint64_t heap_size() const
+    {
+        return m_heap_pos;
+    }
+    inline uint64_t size() const
+    {
+        return m_size;
+    }
 
 private:
     static bool nop(VM *)
@@ -70,6 +85,7 @@ private:
     std::vector<Heap> m_heap;
     uint64_t m_heap_pos;
 
+    uint64_t m_ticks;
     bool m_debug;
 };
 

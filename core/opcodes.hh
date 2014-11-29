@@ -5,9 +5,19 @@
 namespace core
 {
 
+enum class Info : uint8_t
+{
+    Info = 0,
+
+    Ticks,
+
+    HeapSize,
+    HeapStart,
+};
+
 enum class Opcode : uint8_t
 {
-    NOP,
+    NOP = 0,
 
     LOAD_INT,
     STORE_INT8,
@@ -45,6 +55,8 @@ enum class Opcode : uint8_t
     JMP_LE_INT,
 
     MOV,
+    HEAP,
+    INFO,
 
     STOP = 255
 };
