@@ -350,45 +350,45 @@ class Parser:
                 res += c
         return res
 
-    def parse_store(self, opts):
+    def parse_load(self, opts):
         """
         >>> p = Parser('')
-        >>> p.parse_store('R0, 1')
-        '\\x02\\x00\\x01'
+        >>> p.parse_load('R0, 1')
+        '\\x05\\x00\\x01'
         >>> p.code = ''
-        >>> p.parse_store('R1, 1')
-        '\\x02\\x01\\x01'
+        >>> p.parse_load('R1, 1')
+        '\\x05\\x01\\x01'
         >>> p.code = ''
-        >>> p.parse_store('R11, 28')
-        '\\x02\\x0b\\x1c'
+        >>> p.parse_load('R11, 28')
+        '\\x05\\x0b\\x1c'
         >>> p.code = ''
-        >>> p.parse_store('R11, 12345')
-        '\\x03\\x0b09'
+        >>> p.parse_load('R11, 12345')
+        '\\x06\\x0b09'
         >>> p.code = ''
-        >>> p.parse_store('R11, 123456789')
-        '\\x04\\x0b\\x07[\\xcd\\x15'
-        >>> p.parse_store('') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+        >>> p.parse_load('R11, 123456789')
+        '\\x07\\x0b\\x07[\\xcd\\x15'
+        >>> p.parse_load('') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
-        ParseError: Invalid number argument for STORE: 1 () @0
-        >>> p.parse_store('R1') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+        ParseError: Invalid number argument for LOAD: 1 () @0
+        >>> p.parse_load('R1') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
-        ParseError: Invalid number argument for STORE: 1 (R1) @0
-        >>> p.parse_store('R1, R2, 3') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+        ParseError: Invalid number argument for LOAD: 1 (R1) @0
+        >>> p.parse_load('R1, R2, 3') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
-        ParseError: Invalid number argument for STORE: 3 (R1, R2, 3) @0
+        ParseError: Invalid number argument for LOAD: 3 (R1, R2, 3) @0
         >>> p.code = ''
-        >>> p.parse_store('R1, "abc"')
-        '\\x07\\x01abc\\x00'
+        >>> p.parse_load('R1, "abc"')
+        '\\t\\x01abc\\x00'
         >>> p.code = ''
-        >>> p.parse_store('R1, 1.234') # FIXME: Unimplemented
+        >>> p.parse_load('R1, 1.234') # FIXME: Unimplemented
         ''
         """
         data = [x.strip() for x in opts.split(',')]
         if len(data) != 2:
-            raise ParseError('Invalid number argument for STORE: %s (%s) @%s' % (len(data), opts, self.line))
+            raise ParseError('Invalid number argument for LOAD: %s (%s) @%s' % (len(data), opts, self.line))
 
         reg = self.parse_reg(data[0])
 
@@ -398,13 +398,13 @@ class Parser:
             val = int(value)
             (cnt, val) = self.output_num(val)
             if cnt == 1:
-                self.code += chr(opcodes.STORE_INT8)
+                self.code += chr(opcodes.LOAD_INT8)
             elif cnt == 2:
-                self.code += chr(opcodes.STORE_INT16)
+                self.code += chr(opcodes.LOAD_INT16)
             elif cnt == 4:
-                self.code += chr(opcodes.STORE_INT32)
+                self.code += chr(opcodes.LOAD_INT32)
             elif cnt == 8:
-                self.code += chr(opcodes.STORE_INT64)
+                self.code += chr(opcodes.LOAD_INT64)
 
             self.regmap[reg] = 'int'
             self.code += self.output_num(reg, False)
@@ -416,12 +416,12 @@ class Parser:
             pass
         elif value[0] == '"' and value[-1] == '"':
             # String
-            self.code += chr(opcodes.STORE_STR)
+            self.code += chr(opcodes.LOAD_STR)
             self.code += self.output_num(reg, False)
             self.regmap[reg] = 'str'
             self.code += self.format_string(value[1:-1]) + '\x00'
         else:
-            raise ParseError('Invalid argument for STORE: %s @%s' % (value, self.line))
+            raise ParseError('Invalid argument for LOAD: %s @%s' % (value, self.line))
 
         return self.code
 
@@ -447,10 +447,10 @@ class Parser:
         >>> p.regmap[1] = "int"
         >>> p.regmap[2] = "str"
         >>> p.parse_print('R1')
-        '\\x0f\\x01'
+        '\\x14\\x01'
         >>> p.code = ''
         >>> p.parse_print('R2')
-        '\\x11\\x02'
+        '\\x16\\x02'
         """
         opts = opts.strip()
         if not opts:
@@ -487,10 +487,10 @@ class Parser:
         ...
         ParseError: No mandatory parameter given for INC
         >>> p.parse_inc('R0')
-        '\\x08\\x00'
+        '\\r\\x00'
         >>> p.code = ''
         >>> p.parse_inc('R18')
-        '\\x08\\x12'
+        '\\r\\x12'
         >>> p.parse_inc('a') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
@@ -520,10 +520,10 @@ class Parser:
         ...
         ParseError: No mandatory parameter given for DEC
         >>> p.parse_dec('R0')
-        '\\t\\x00'
+        '\\x0e\\x00'
         >>> p.code = ''
         >>> p.parse_dec('R18')
-        '\\t\\x12'
+        '\\x0e\\x12'
         >>> p.parse_dec('PC') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
@@ -672,14 +672,14 @@ class Parser:
         >>> p.labels['label2'] = 20
         >>> p.line = 4
         >>> p.parse_jmp('R1 < R2, label')
-        '\\x18\\x01\\x01\\x02\\x01'
+        '\\x1d\\x01\\x01\\x02\\x01'
         >>> p.code = ''
         >>> p.parse_jmp('R1 < R2, label2')
-        'FIXME 1,20:\\x18\\x01\\x01\\x02'
+        'FIXME 1,20:\\x1d\\x01\\x01\\x02'
         >>> p.code = ''
         >>> p.labels['label2'] = 2000
         >>> p.parse_jmp('R1 < R2, label2')
-        'FIXME 2,2000:\\x19\\x01\\x01\\x02'
+        'FIXME 2,2000:\\x1e\\x01\\x01\\x02'
         >>> p.code = ''
         >>> p.parse_jmp('R1 R2, label2') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
@@ -885,7 +885,7 @@ class Parser:
         """
         >>> p = Parser('')
         >>> p.parse_heap('R1')
-        '\\x1e\\x01'
+        '#\\x01'
         >>> p.parse_heap('1') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
@@ -908,7 +908,7 @@ class Parser:
         """
         >>> p = Parser('')
         >>> p.parse_info('R1, 1')
-        '\\x1f\\x01\\x01'
+        '$\\x01\\x01'
         >>> p.parse_info('') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
@@ -943,14 +943,14 @@ class Parser:
         >>> p = Parser('')
         >>> p.parse_command('', '') is None
         True
-        >>> p.parse_command('STORE', 'R1, 1')
-        '\\x02\\x01\\x01'
+        >>> p.parse_command('LOAD', 'R1, 1')
+        '\\x05\\x01\\x01'
         >>> p.code = ''
         >>> p.parse_command('PRINT', 'R1')
-        '\\x0f\\x01'
+        '\\x14\\x01'
         >>> p.code = ''
         >>> p.parse_command('ADD', 'R3, R1, R0')
-        '\\n\\x03\\x01\\x00'
+        '\\x0f\\x03\\x01\\x00'
         >>> p.code = ''
         >>> p.parse_command('NONE', '') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
@@ -960,8 +960,8 @@ class Parser:
         cmd = cmd.upper().strip()
         if cmd == '':
             return None
-        elif cmd == 'STORE':
-            return self.parse_store(opts)
+        elif cmd == 'LOAD':
+            return self.parse_load(opts)
         elif cmd == 'PRINT':
             return self.parse_print(opts)
         elif cmd == 'INC':
@@ -1020,15 +1020,15 @@ class Parser:
         Traceback (most recent call last):
         ...
         ParseError: Unsupported command: NONE @0
-        >>> p.parse_line('STORE R1, 0')
-        '\\x02\\x01\\x00'
+        >>> p.parse_line('LOAD R1, 0')
+        '\\x05\\x01\\x00'
         >>> p.parse_line('') is None
         True
         >>> p.code = ''
         >>> p.labels
         {}
-        >>> p.parse_line('tst: STORE R1, 0')
-        '\\x02\\x01\\x00'
+        >>> p.parse_line('tst: LOAD R1, 0')
+        '\\x05\\x01\\x00'
         >>> p.labels
         {'tst': 0}
         """

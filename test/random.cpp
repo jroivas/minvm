@@ -16,18 +16,18 @@ static void test_random_ints()
     // In fact it's possible for these tests to fail,
     // but possibility for that is minimal...
 
-    assert(vm.regs().load_int(0) == 0);
-    assert(vm.regs().load_int(1) == 0);
+    assert(vm.regs().get_int(0) == 0);
+    assert(vm.regs().get_int(1) == 0);
 
     assert(vm.step());
-    assert(vm.regs().load_int(0) != 0);
-    assert(vm.regs().load_int(1) == 0);
+    assert(vm.regs().get_int(0) != 0);
+    assert(vm.regs().get_int(1) == 0);
 
     assert(vm.step());
-    assert(vm.regs().load_int(0) != 0);
-    assert(vm.regs().load_int(1) != 0);
+    assert(vm.regs().get_int(0) != 0);
+    assert(vm.regs().get_int(1) != 0);
 
-    assert(vm.regs().load_int(0) != vm.regs().load_int(1));
+    assert(vm.regs().get_int(0) != vm.regs().get_int(1));
 }
 
 void test_random()

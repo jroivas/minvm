@@ -5,20 +5,20 @@
 #include <strs.hh>
 
 static uint8_t mem1[] = {
-    (uint8_t)core::Opcode::STORE_INT8, 0, 5,
-    (uint8_t)core::Opcode::STORE_INT8, 1, 10,
-    (uint8_t)core::Opcode::STORE_STR, 8, 't', 's', 't', 0
+    (uint8_t)core::Opcode::LOAD_INT8, 0, 5,
+    (uint8_t)core::Opcode::LOAD_INT8, 1, 10,
+    (uint8_t)core::Opcode::LOAD_STR, 8, 't', 's', 't', 0
 };
 
 static uint8_t mem2[] = {
-    (uint8_t)core::Opcode::STORE_INT8, 0, 123,
-    (uint8_t)core::Opcode::STORE_INT8, 1, 99,
-    (uint8_t)core::Opcode::STORE_STR, 8, 'a', 'b', 'c', 0,
+    (uint8_t)core::Opcode::LOAD_INT8, 0, 123,
+    (uint8_t)core::Opcode::LOAD_INT8, 1, 99,
+    (uint8_t)core::Opcode::LOAD_STR, 8, 'a', 'b', 'c', 0,
     (uint8_t)core::Opcode::STOP
 };
 
 static uint8_t mem3[] = {
-    (uint8_t)core::Opcode::STORE_INT8, 0, 5
+    (uint8_t)core::Opcode::LOAD_INT8, 0, 5
 };
 
 static void test_basic_opcodes()
@@ -56,15 +56,15 @@ static void test_memory_fetch()
 
     vm.load((uint8_t*)mem1, sizeof(mem1));
 
-    assert(vm.fetch() == core::Opcode::STORE_INT8);
+    assert(vm.fetch() == core::Opcode::LOAD_INT8);
     assert(vm.fetch8() == 0);
     assert(vm.fetch8() == 5);
 
-    assert(vm.fetch() == core::Opcode::STORE_INT8);
+    assert(vm.fetch() == core::Opcode::LOAD_INT8);
     assert(vm.fetch8() == 1);
     assert(vm.fetch8() == 10);
 
-    assert(vm.fetch() == core::Opcode::STORE_STR);
+    assert(vm.fetch() == core::Opcode::LOAD_STR);
     assert(vm.fetch8() == 8);
     assert(vm.fetch8() == 't');
     assert(vm.fetch8() == 's');
@@ -96,11 +96,11 @@ static void test_memory_exe()
     assert(vm.step());
 
     assert(vm.regs().pc() == 12);
-    assert(vm.regs().load_string(8) == "abc");
+    assert(vm.regs().get_string(8) == "abc");
 
     assert(!vm.step());
     assert(vm.regs().pc() == 13);
-    assert(vm.regs().load_string(8) == "abc");
+    assert(vm.regs().get_string(8) == "abc");
 }
 
 static void test_memory_limits()

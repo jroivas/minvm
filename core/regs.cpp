@@ -11,7 +11,7 @@ Registers::Registers() : m_pc(0)
     }
 }
 
-void Registers::store_int(uint8_t num, uint64_t val)
+void Registers::put_int(uint8_t num, uint64_t val)
 {
     if (num == (uint8_t)-1) {
         m_pc = val;
@@ -23,7 +23,7 @@ void Registers::store_int(uint8_t num, uint64_t val)
     m_reg[num].m_int = val;
 }
 
-void Registers::store_float(uint8_t num, double val)
+void Registers::put_float(uint8_t num, double val)
 {
     if (num >= num_registers)
         throw std::string("Invalid register");
@@ -31,7 +31,7 @@ void Registers::store_float(uint8_t num, double val)
     m_reg[num].m_float = val;
 }
 
-void Registers::store_string(uint8_t num, std::string val)
+void Registers::put_string(uint8_t num, std::string val)
 {
     if (num >= num_registers)
         throw std::string("Invalid register");
@@ -46,7 +46,7 @@ core::RegisterType Registers::type(uint8_t num)
     return m_reg[num].m_type;
 }
 
-uint64_t Registers::load_int(uint8_t num) const
+uint64_t Registers::get_int(uint8_t num) const
 {
     if (num == (uint8_t)-1) {
         return m_pc;
@@ -58,7 +58,7 @@ uint64_t Registers::load_int(uint8_t num) const
     return m_reg[num].m_int;
 }
 
-double Registers::load_float(uint8_t num) const
+double Registers::get_float(uint8_t num) const
 {
     if (num >= num_registers)
         throw std::string("Invalid register");
@@ -67,7 +67,7 @@ double Registers::load_float(uint8_t num) const
     return m_reg[num].m_float;
 }
 
-std::string Registers::load_string(uint8_t num) const
+std::string Registers::get_string(uint8_t num) const
 {
     if (num >= num_registers)
         throw std::string("Invalid register");

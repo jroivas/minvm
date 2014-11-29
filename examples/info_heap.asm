@@ -1,5 +1,5 @@
-STORE R0, "\n"
-STORE R10, 20
+LOAD R0, "\n"
+LOAD R10, 20
 
 INFO R1, 0
 PRINT R1

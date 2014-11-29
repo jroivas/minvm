@@ -11,10 +11,12 @@ public:
     Ints(core::VM *vm);
 
 private:
-    static bool store_int8(core::VM *vm);
-    static bool store_int16(core::VM *vm);
-    static bool store_int32(core::VM *vm);
-    static bool store_int64(core::VM *vm);
+    static bool load_int8(core::VM *vm);
+    static bool load_int16(core::VM *vm);
+    static bool load_int32(core::VM *vm);
+    static bool load_int64(core::VM *vm);
+
+    static bool load_int_mem(core::VM *vm);
 
     static bool inc_int(core::VM *vm);
     static bool dec_int(core::VM *vm);

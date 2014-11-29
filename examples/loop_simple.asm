@@ -1,8 +1,8 @@
 ; Loop 0..20
 
-STORE R1, 0
-STORE R2, 20
-STORE R9, "\n"
+LOAD R1, 0
+LOAD R2, 20
+LOAD R9, "\n"
 
 begin:
     PRINT R1

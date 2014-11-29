@@ -66,7 +66,7 @@ static void test_heap_access_exception()
 static void test_heap_add()
 {
     static uint8_t mem[] = {
-        (uint8_t)core::Opcode::STORE_INT8, 0, 12,
+        (uint8_t)core::Opcode::LOAD_INT8, 0, 12,
         (uint8_t)core::Opcode::HEAP, 0,
         (uint8_t)core::Opcode::HEAP, 0,
     };
@@ -101,31 +101,31 @@ static void test_heap_info()
     impl::Heap heaps(&vm);
 
     // Info
-    assert(vm.regs().load_int(0) == 0);
+    assert(vm.regs().get_int(0) == 0);
     assert(vm.step());
-    assert(vm.regs().load_int(0) == 0xdeadbeef);
+    assert(vm.regs().get_int(0) == 0xdeadbeef);
 
     // Ticks
     assert(vm.step());
-    assert(vm.regs().load_int(0) == 2);
+    assert(vm.regs().get_int(0) == 2);
 
     // HeapSize
     assert(vm.step());
-    assert(vm.regs().load_int(0) == 0);
+    assert(vm.regs().get_int(0) == 0);
 
     // HeapSize
     vm.add_heap(20);
     assert(vm.step());
-    assert(vm.regs().load_int(0) == 20);
+    assert(vm.regs().get_int(0) == 20);
 
     // HeapStart
     assert(vm.step());
-    assert(vm.regs().load_int(0) == sizeof(mem));
-    assert(vm.regs().load_int(0) == 3 * 7);
+    assert(vm.regs().get_int(0) == sizeof(mem));
+    assert(vm.regs().get_int(0) == 3 * 7);
 
     // Ticks
     assert(vm.step());
-    assert(vm.regs().load_int(0) == 6);
+    assert(vm.regs().get_int(0) == 6);
 
     // 0xff
     assertThrows(

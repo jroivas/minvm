@@ -18,7 +18,7 @@ bool Random::random(core::VM *vm)
     std::random_device m_rand;
     std::uniform_int_distribution<uint64_t> dist;
 
-    vm->regs().store_int(
+    vm->regs().put_int(
         vm->fetch8(),
         dist(m_rand));
 

@@ -33,15 +33,15 @@ class Registers
 public:
     Registers();
 
-    void store_int(uint8_t num, uint64_t val);
-    void store_float(uint8_t num, double val);
-    void store_string(uint8_t num, std::string val);
+    void put_int(uint8_t num, uint64_t val);
+    void put_float(uint8_t num, double val);
+    void put_string(uint8_t num, std::string val);
 
     RegisterType type(uint8_t num);
 
-    uint64_t load_int(uint8_t num) const;
-    double load_float(uint8_t num) const;
-    std::string load_string(uint8_t num) const;
+    uint64_t get_int(uint8_t num) const;
+    double get_float(uint8_t num) const;
+    std::string get_string(uint8_t num) const;
 
     void copy(uint8_t dest, uint8_t src);
 

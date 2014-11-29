@@ -1,7 +1,7 @@
 ; Loop 0..20
 
-STORE R1, 0
-STORE R2, 20
+LOAD R1, 0
+LOAD R2, 20
 
 begin:
     PRINT R1

@@ -1,13 +1,13 @@
-STORE R0, 1234
-STORE R1, 0
-STORE R2, 20
-STORE R3, 42
+LOAD R0, 1234
+LOAD R1, 0
+LOAD R2, 20
+LOAD R3, 42
 
-STORE R9, "\n"
-STORE R11, "One should not see this!"
-STORE R12, "Result should be 42: "
-STORE R14, "OK"
-STORE R15, "Fail"
+LOAD R9, "\n"
+LOAD R11, "One should not see this!"
+LOAD R12, "Result should be 42: "
+LOAD R14, "OK"
+LOAD R15, "Fail"
 
 loop:
     INC R1

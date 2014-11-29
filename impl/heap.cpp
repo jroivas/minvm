@@ -17,7 +17,7 @@ bool Heap::heap(core::VM *vm)
     if (vm->debug()) std::cerr << "HEAP\n";
 
     uint8_t reg = vm->fetch8();
-    uint64_t amount = vm->regs().load_int(reg);
+    uint64_t amount = vm->regs().get_int(reg);
 
     vm->add_heap(amount);
 
@@ -51,7 +51,7 @@ bool Heap::info(core::VM *vm)
                 + std::to_string(reg2));
     }
 
-    vm->regs().store_int(reg1, val);
+    vm->regs().put_int(reg1, val);
 
     return true;
 }

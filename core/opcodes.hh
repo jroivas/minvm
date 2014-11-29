@@ -19,14 +19,20 @@ enum class Opcode : uint8_t
 {
     NOP = 0,
 
+    STORE_INT,
+    STORE_INT_MEM,
     LOAD_INT,
-    STORE_INT8,
-    STORE_INT16,
-    STORE_INT32,
-    STORE_INT64,
+    LOAD_INT_MEM,
+
+    LOAD_INT8,
+    LOAD_INT16,
+    LOAD_INT32,
+    LOAD_INT64,
 
     LOAD_STR,
+    LOAD_STR_MEM,
     STORE_STR,
+    STORE_STR_MEM,
 
     INC_INT,
     DEC_INT,

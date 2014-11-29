@@ -24,8 +24,8 @@ Jump::Jump(VM *vm)
 bool Jump::conditional(
     core::VM *vm, uint8_t algo, uint8_t reg1, uint8_t reg2)
 {
-    uint64_t val1 = vm->regs().load_int(reg1);
-    uint64_t val2 = vm->regs().load_int(reg2);
+    uint64_t val1 = vm->regs().get_int(reg1);
+    uint64_t val2 = vm->regs().get_int(reg2);
 
     switch (algo) {
         case 0: return val1 == val2;
@@ -142,7 +142,7 @@ bool Jump::jump_int(core::VM *vm)
     if (vm->debug()) std::cerr << "JUMP_INT\n";
 
     int8_t reg = vm->fetch8();
-    uint64_t pos = vm->regs().load_int(reg);
+    uint64_t pos = vm->regs().get_int(reg);
 
     vm->regs().pc_update(pos);
 
@@ -255,7 +255,7 @@ bool Jump::jump_le_int(core::VM *vm)
     bool cond = conditional(vm, oper, reg1, reg2);
 
     int8_t reg = vm->fetch8();
-    uint64_t pos = vm->regs().load_int(reg);
+    uint64_t pos = vm->regs().get_int(reg);
 
     jump_conditional(
         vm,
