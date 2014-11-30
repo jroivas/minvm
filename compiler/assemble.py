@@ -25,6 +25,7 @@ class Parser:
         self.labels = {}
         self.line = 0
         self.regmap = {}
+        self.postdata = {}
         self.opers = {
             '==': 0,
             '<': 1,
@@ -350,6 +351,100 @@ class Parser:
                 res += c
         return res
 
+    def parse_load_2args(self, data):
+        """
+        """
+        reg = self.parse_reg(data[0])
+
+        value = data[1]
+        if value.isdigit():
+            # Int
+            val = int(value)
+            (cnt, val) = self.output_num(val)
+            if cnt == 1:
+                self.code += chr(opcodes.LOAD_INT8)
+            elif cnt == 2:
+                self.code += chr(opcodes.LOAD_INT16)
+            elif cnt == 4:
+                self.code += chr(opcodes.LOAD_INT32)
+            elif cnt == 8:
+                self.code += chr(opcodes.LOAD_INT64)
+
+            self.regmap[reg] = 'int'
+            self.code += self.output_num(reg, False)
+            self.code += val
+        elif self.is_float(value):
+            # TODO
+            # Float
+            self.regmap[reg] = 'float'
+            pass
+        elif value[0] == '"' and value[-1] == '"':
+            # String
+            self.code += chr(opcodes.LOAD_STR)
+            self.code += self.output_num(reg, False)
+            self.regmap[reg] = 'str'
+            self.code += self.format_string(value[1:-1]) + '\x00'
+        else:
+            raise ParseError('Invalid argument for LOAD: %s @%s' % (value, self.line))
+
+    def parse_load_3args(self, data):
+        """
+        >>> p = Parser('')
+        """
+        reg = self.parse_reg(data[0])
+        if not data[1].isdigit():
+            raise ParseError('Invalid argument for LOAD: %s @%s' % (data[1], self.line))
+
+        cnt = int(data[1])
+
+        opt = data[2].strip()
+        if opt[0] == '[' and opt[-1] == ']':
+            address = opt[1:-1]
+
+            self.code += chr(opcodes.LOAD_INT_MEM)
+            self.code += self.output_num(reg, False)
+            self.code += self.output_num(cnt, False)
+
+            address_entries = address.split(' ')
+            if len(address_entries) == 0:
+                raise ParseError('Invalid argument for LOAD: %s @%s' % (data[2], self.line))
+
+            address = address_entries[0]
+
+            if address.isdigit():
+                address = int(address)
+                self.code += self.output_num(address, False)
+            elif address in self.labels:
+                target = self.labels[address]
+                oper = 0
+                diff = 0
+                if len(address_entries) == 3:
+                    oper = address_entries[1]
+                    if oper != '+' and oper != '-':
+                        raise ParseError('Invalid argument for LOAD: %s (%s) @%s' % (oper, data[2], self.line))
+                    diff = address_entries[2]
+                    if not diff.isdigit():
+                        raise ParseError('Invalid argument for LOAD: %s (%s) @%s' % (diff, data[2], self.line))
+                    diff = int(diff)
+                self.code += '\x00' * 8
+                self.postdata[self.line] = (opcodes.LOAD_INT_MEM, target, oper, diff)
+                #self.code = '%s %s,%s,%s,%s,%s:' % (Parser.__MAGIC_JUMP, 0, 8, target, oper, diff) + self.code
+                #self.code = '%s %s,%s,%s,%s,%s:' % (Parser.__MAGIC_JUMP, 0, 8, target, oper, diff) + self.code
+            else:
+                raise ParseError('Invalid argument for LOAD: %s @%s' % (data[2], self.line))
+
+                #self.code += self.output_num(address, False)
+            self.regmap[reg] = 'int'
+        elif opt[0] == 'R':
+            reg2 = self.parse_reg(opt)
+            self.code += chr(opcodes.LOAD_INT)
+            self.code += self.output_num(reg, False)
+            self.code += self.output_num(cnt, False)
+            self.code += self.output_num(reg2, False)
+            self.regmap[reg] = 'int'
+        elif opt.isdigit():
+            data = int(opt)
+
     def parse_load(self, opts):
         """
         >>> p = Parser('')
@@ -387,41 +482,12 @@ class Parser:
         ''
         """
         data = [x.strip() for x in opts.split(',')]
-        if len(data) != 2:
-            raise ParseError('Invalid number argument for LOAD: %s (%s) @%s' % (len(data), opts, self.line))
-
-        reg = self.parse_reg(data[0])
-
-        value = data[1]
-        if value.isdigit():
-            # Int
-            val = int(value)
-            (cnt, val) = self.output_num(val)
-            if cnt == 1:
-                self.code += chr(opcodes.LOAD_INT8)
-            elif cnt == 2:
-                self.code += chr(opcodes.LOAD_INT16)
-            elif cnt == 4:
-                self.code += chr(opcodes.LOAD_INT32)
-            elif cnt == 8:
-                self.code += chr(opcodes.LOAD_INT64)
-
-            self.regmap[reg] = 'int'
-            self.code += self.output_num(reg, False)
-            self.code += val
-        elif self.is_float(value):
-            # TODO
-            # Float
-            self.regmap[reg] = 'float'
-            pass
-        elif value[0] == '"' and value[-1] == '"':
-            # String
-            self.code += chr(opcodes.LOAD_STR)
-            self.code += self.output_num(reg, False)
-            self.regmap[reg] = 'str'
-            self.code += self.format_string(value[1:-1]) + '\x00'
+        if len(data) == 2:
+            self.parse_load_2args(data)
+        elif len(data) == 3:
+            self.parse_load_3args(data)
         else:
-            raise ParseError('Invalid argument for LOAD: %s @%s' % (value, self.line))
+            raise ParseError('Invalid number argument for LOAD: %s (%s) @%s' % (len(data), opts, self.line))
 
         return self.code
 
@@ -675,11 +741,11 @@ class Parser:
         '\\x1d\\x01\\x01\\x02\\x01'
         >>> p.code = ''
         >>> p.parse_jmp('R1 < R2, label2')
-        'FIXME 1,20:\\x1d\\x01\\x01\\x02'
+        'FIXME 1,1,20,0,0:\\x1d\\x01\\x01\\x02'
         >>> p.code = ''
         >>> p.labels['label2'] = 2000
         >>> p.parse_jmp('R1 < R2, label2')
-        'FIXME 2,2000:\\x1e\\x01\\x01\\x02'
+        'FIXME 1,2,2000,0,0:\\x1e\\x01\\x01\\x02'
         >>> p.code = ''
         >>> p.parse_jmp('R1 R2, label2') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
@@ -736,7 +802,7 @@ class Parser:
                         est_size += extra_bytes
                     self.code += self.output_num(est_size, False)
                 else:
-                    self.code = '%s %s,%s:' % (Parser.__MAGIC_JUMP, bits, target) + self.code
+                    self.code = '%s %s,%s,%s,0,0:' % (Parser.__MAGIC_JUMP, 1, bits, target) + self.code
             else:
                 raise ParseError('Unsupported JMP target: %s @%s' % (data[1], self.line))
 
@@ -1069,50 +1135,73 @@ class Parser:
         Traceback (most recent call last):
         ...
         ValueError: invalid literal for int() with base 10: ''
-        >>> p.output[1] = 'FIXME 1, 2: a'
-        >>> p.try_fix(1) # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+        >>> p.output[1] = 'FIXME 1, 1, 2, 0, 0: a'
+        >>> p.try_fix(1)
         (True, 0)
+        >>> p.output[1] = 'FIXME 1, 1, 5, 0, 0: a'
+        >>> p.output[2] = 'bc'
+        >>> p.try_fix(1)
+        (True, 2)
+        >>> p.output[3] = 'FIXME 1, 1, 1, 0, 0: d'
+        >>> p.try_fix(1)
+        (False, 2)
         """
         if not line:
             return (False, 0)
         if line not in self.output:
             raise ParseError('Invalid data')
         data = self.output[line].split(':')
-        (bits, target) = [int(x) for x in data[0][6:].split(',')]
+        (_, bits, target, oper, diff) = [int(x) for x in data[0][6:].split(',')]
 
-        tmp = line+1
+        if bits == 8:
+            tmp = 0
+        else:
+            tmp = line + 1
         size = 0
         while tmp < target:
             if tmp in self.output:
                 if self.output[tmp][:5] == Parser.__MAGIC_JUMP:
-                    return (False, 0)
+                    return (False, size)
                 size += len(self.output[tmp])
             tmp += 1
+        #print (bits, size)
+
+        if oper == 1:
+            size += diff
+        elif oper == 2:
+            size -= diff
+        #print (bits, size)
+
         return (True, size)
 
     def fix_line(self, line, size):
         """
         >>> p = Parser('')
         >>> p.fix_line('', 0)
-        >>> p.output[1] = 'FIXME 1, 2: a'
+        >>> p.output[1] = 'FIXME 1, 1, 2, 0, 0: a'
         >>> p.fix_line(1, 0)
         """
         if not line:
             return
         data = self.output[line].split(':')
-        (bits, target) = [int(x) for x in data[0][6:].split(',')]
+        (append_bits, bits, target, _, _) = [int(x) for x in data[0][6:].split(',')]
         data = ':'.join(data[1:])
 
-        num = self.output_num(size + bits, False)
-        while len(num) < bits/8:
+        outnum = size
+        if append_bits == 1:
+            outnum += bits
+
+        num = self.output_num(outnum, False)
+        while len(num) < bits / 8:
             num = '\x00' + num
+
         self.output[line] = data + num
 
     def try_fixes(self, lines):
         """
         >>> p = Parser('')
         >>> p.try_fixes([])
-        >>> p.output[1] = 'FIXME 1, 2: a'
+        >>> p.output[1] = 'FIXME 1, 1, 2, 0, 0: a'
         >>> p.try_fixes([1])
         """
         for l in lines:
@@ -1146,6 +1235,25 @@ class Parser:
             if tries >= 100:
                 break
 
+    def apply_post_data(self):
+        for line in self.postdata:
+            tmp = 0
+            size = 0
+            (opcode, target, oper, diff) = self.postdata[line]
+            while tmp < target:
+                if tmp in self.output:
+                    if self.output[tmp][:5] == Parser.__MAGIC_JUMP:
+                        raise ParseError('Got invalid %s on %s' % (Parser.__MAGIC_JUMP, tmp))
+                    size += len(self.output[tmp])
+                tmp += 1
+            if oper == '+':
+                size += diff
+            elif oper == '-':
+                size -= diff
+            num = self.output_num(size, False)
+            num = '\x00' * (8 - len(num)) + num
+            self.output[line] = self.output[line][:-8:] + num
+
     def parse(self):
         """
         >>> p = Parser('')
@@ -1164,6 +1272,7 @@ class Parser:
             self.output[self.line] = self.code
 
         self.fix_fixmes()
+        self.apply_post_data()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Assembler for MinVM')

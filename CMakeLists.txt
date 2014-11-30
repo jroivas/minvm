@@ -25,7 +25,7 @@ add_custom_target(unittest ALL
     COMMAND python -mdoctest "${CMAKE_CURRENT_LIST_DIR}/compiler/assemble.py"
     DEPENDS compiler/assemble.py)
 
-set(assembly_tests loop_simple jump_forward bench noexit info_heap)
+set(assembly_tests loop_simple jump_forward bench noexit info_heap load_mem)
 set(test_targets "")
 
 foreach(atest ${assembly_tests})
