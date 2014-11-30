@@ -88,6 +88,20 @@ static void test_ints_load_int_mem_2bytes()
     assert(vm.regs().get_int(5) == 0x4243);
 }
 
+static void test_ints_load_int_mem_2bytes_overflow()
+{
+    core::VM vm((uint8_t*)mem2, sizeof(mem2));
+    mem2[2] = 2;
+    mem2[2] = 22;
+    impl::Ints ints(&vm);
+
+    assert(vm.regs().get_int(5) == 0);
+    assertThrows(
+        std::string,
+        "Invalid size: 22",
+        vm.step());
+}
+
 static void test_ints_load_int_mem_3bytes()
 {
     core::VM vm((uint8_t*)mem2, sizeof(mem2));
@@ -133,6 +147,49 @@ static void test_ints_load_int_mem_9bytes()
         std::string,
         "Invalid size: 9",
         vm.step());
+}
+
+static uint8_t mem3[] = {
+    (uint8_t)core::Opcode::LOAD_INT8, 2, 8,
+    (uint8_t)core::Opcode::LOAD_INT, 5, 1, 2,
+    (uint8_t)core::Opcode::STOP,
+    0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x50
+};
+
+static void test_ints_load_int_1byte()
+{
+    core::VM vm((uint8_t*)mem3, sizeof(mem3));
+    mem3[5] = 1;
+    impl::Ints ints(&vm);
+
+    assert(vm.step());
+    assert(vm.regs().get_int(5) == 0);
+    assert(vm.step());
+    assert(vm.regs().get_int(5) == 0x42);
+}
+
+static void test_ints_load_int_3bytes()
+{
+    core::VM vm((uint8_t*)mem3, sizeof(mem3));
+    mem3[5] = 3;
+    impl::Ints ints(&vm);
+
+    assert(vm.step());
+    assert(vm.regs().get_int(5) == 0);
+    assert(vm.step());
+    assert(vm.regs().get_int(5) == 0x424344);
+}
+
+static void test_ints_load_int_4bytes()
+{
+    core::VM vm((uint8_t*)mem3, sizeof(mem3));
+    mem3[5] = 4;
+    impl::Ints ints(&vm);
+
+    assert(vm.step());
+    assert(vm.regs().get_int(5) == 0);
+    assert(vm.step());
+    assert(vm.regs().get_int(5) == 0x42434445);
 }
 
 static void test_ints_inc()
@@ -413,8 +470,13 @@ void test_ints()
     TEST_CASE(test_ints_load_int32);
     TEST_CASE(test_ints_load_int64);
 
+    TEST_CASE(test_ints_load_int_1byte);
+    TEST_CASE(test_ints_load_int_3bytes);
+    TEST_CASE(test_ints_load_int_4bytes);
+
     TEST_CASE(test_ints_load_int_mem_1byte);
     TEST_CASE(test_ints_load_int_mem_2bytes);
+    TEST_CASE(test_ints_load_int_mem_2bytes_overflow);
     TEST_CASE(test_ints_load_int_mem_3bytes);
     TEST_CASE(test_ints_load_int_mem_4bytes);
     TEST_CASE(test_ints_load_int_mem_8bytes);

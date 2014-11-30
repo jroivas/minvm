@@ -16,6 +16,7 @@ private:
     static bool load_int32(core::VM *vm);
     static bool load_int64(core::VM *vm);
 
+    static bool load_int(core::VM *vm);
     static bool load_int_mem(core::VM *vm);
 
     static bool inc_int(core::VM *vm);

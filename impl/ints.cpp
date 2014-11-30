@@ -8,6 +8,7 @@ using impl::Ints;
 
 Ints::Ints(VM *vm)
 {
+    vm->opcode((uint32_t)Opcode::LOAD_INT, Ints::load_int);
     vm->opcode((uint32_t)Opcode::LOAD_INT_MEM, Ints::load_int_mem);
 
     vm->opcode((uint32_t)Opcode::LOAD_INT8, Ints::load_int8);
@@ -26,6 +27,29 @@ Ints::Ints(VM *vm)
     vm->opcode((uint32_t)Opcode::MOD_INT, Ints::mod_int);
 
     vm->opcode((uint32_t)Opcode::PRINT_INT, Ints::print_int);
+}
+
+bool Ints::load_int(core::VM *vm)
+{
+    if (vm->debug()) std::cerr << "LOAD_INT\n";
+
+    uint8_t reg1 = vm->fetch8();
+    uint8_t size = vm->fetch8();
+    uint8_t reg2 = vm->fetch8();
+    if (size > 8)
+        throw std::string("Invalid size: ") + std::to_string((int)size);
+
+    uint64_t pos = vm->regs().get_int(reg2);
+
+    uint64_t val = 0;
+    for (uint8_t cnt = 0; cnt < size; ++cnt) {
+        val <<= 8;
+        val |= vm->mem(pos + cnt);
+    }
+
+    vm->regs().put_int(reg1, val);
+
+    return true;
 }
 
 bool Ints::load_int_mem(core::VM *vm)
