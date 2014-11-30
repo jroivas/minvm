@@ -68,14 +68,7 @@ public:
     uint8_t mem(uint64_t pos) const;
 
 private:
-    static bool nop(VM *)
-    {
-        return true;
-    }
-    static bool stop(VM *)
-    {
-        return false;
-    }
+    static bool invalid_opcode(VM *);
     void init();
 
     std::function<bool (VM *)> m_opcodes[256];

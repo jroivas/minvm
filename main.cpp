@@ -4,6 +4,7 @@
 
 #include "opcodes.hh"
 #include "vm.hh"
+#include "impl/nopstop.hh"
 #include "impl/ints.hh"
 #include "impl/strs.hh"
 #include "impl/random.hh"
@@ -28,6 +29,7 @@ int main(int argc, char **argv)
     VM vm((uint8_t*)code.data(), code.length());
     //vm.set_debug();
 
+    impl::NopStop nopstop(&vm);
     impl::Ints ints(&vm);
     impl::Strs strs(&vm);
     impl::Random rand(&vm);

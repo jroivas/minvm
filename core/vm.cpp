@@ -25,9 +25,8 @@ VM::VM(uint8_t *mem, uint64_t size) :
 void VM::init()
 {
     for (uint32_t i = 0; i < 256; ++i) {
-        m_opcodes[i] = VM::nop;
+        m_opcodes[i] = VM::invalid_opcode;
     }
-    m_opcodes[(uint32_t)Opcode::STOP] = VM::stop;
 }
 
 void VM::load(uint8_t *mem, uint64_t size)
@@ -123,4 +122,9 @@ uint8_t VM::mem(uint64_t pos) const
         return get_heap(pos - m_size);
 
     return m_mem[pos];
+}
+
+bool VM::invalid_opcode(VM *)
+{
+    throw std::string("Invalid opcode");
 }

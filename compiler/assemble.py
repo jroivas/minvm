@@ -1236,6 +1236,10 @@ class Parser:
                 break
 
     def apply_post_data(self):
+        """
+        >>> p = Parser('')
+        >>> p.apply_post_data()
+        """
         for line in self.postdata:
             tmp = 0
             size = 0

@@ -1,6 +1,7 @@
 #include "framework.hh"
 #include <vm.hh>
 #include <opcodes.hh>
+#include <nopstop.hh>
 #include <ints.hh>
 #include <jump.hh>
 
@@ -14,6 +15,7 @@ static void test_jump_jmp8()
     };
 
     core::VM vm((uint8_t*)mem, sizeof(mem));
+    impl::NopStop nopstop(&vm);
     impl::Ints ints(&vm);
     impl::Jump jmps(&vm);
 
@@ -40,6 +42,7 @@ static void test_jump_jmp8_neg()
     };
 
     core::VM vm((uint8_t*)mem, sizeof(mem));
+    impl::NopStop nopstop(&vm);
     impl::Ints ints(&vm);
     impl::Jump jmps(&vm);
 
@@ -68,6 +71,7 @@ static void test_jump_jmp16()
     };
 
     core::VM vm((uint8_t*)mem, sizeof(mem));
+    impl::NopStop nopstop(&vm);
     impl::Ints ints(&vm);
     impl::Jump jmps(&vm);
 
@@ -94,6 +98,7 @@ static void test_jump_jmp32()
     };
 
     core::VM vm((uint8_t*)mem, sizeof(mem));
+    impl::NopStop nopstop(&vm);
     impl::Ints ints(&vm);
     impl::Jump jmps(&vm);
 
@@ -120,6 +125,7 @@ static void test_jump_jmp64()
     };
 
     core::VM vm((uint8_t*)mem, sizeof(mem));
+    impl::NopStop nopstop(&vm);
     impl::Ints ints(&vm);
     impl::Jump jmps(&vm);
 
@@ -147,6 +153,7 @@ static void test_jump_jmp_int()
     };
 
     core::VM vm((uint8_t*)mem, sizeof(mem));
+    impl::NopStop nopstop(&vm);
     impl::Ints ints(&vm);
     impl::Jump jmps(&vm);
 
@@ -176,6 +183,7 @@ static void test_jump_jmp_le8()
     };
 
     core::VM vm((uint8_t*)mem, sizeof(mem));
+    impl::NopStop nopstop(&vm);
     impl::Ints ints(&vm);
     impl::Jump jmps(&vm);
 
@@ -214,6 +222,7 @@ static void test_jump_jmp_le16()
     mem[13] = neg & 0xFF;
 
     core::VM vm((uint8_t*)mem, sizeof(mem));
+    impl::NopStop nopstop(&vm);
     impl::Ints ints(&vm);
     impl::Jump jmps(&vm);
 
@@ -254,6 +263,7 @@ static void test_jump_jmp_le32()
     mem[15] = neg & 0xFF;
 
     core::VM vm((uint8_t*)mem, sizeof(mem));
+    impl::NopStop nopstop(&vm);
     impl::Ints ints(&vm);
     impl::Jump jmps(&vm);
 
@@ -289,6 +299,7 @@ static void test_jump_jmp_le64()
     };
 
     core::VM vm((uint8_t*)mem, sizeof(mem));
+    impl::NopStop nopstop(&vm);
     impl::Ints ints(&vm);
     impl::Jump jmps(&vm);
 
@@ -325,6 +336,7 @@ static void test_jump_jmp_le_int()
     };
 
     core::VM vm((uint8_t*)mem, sizeof(mem));
+    impl::NopStop nopstop(&vm);
     impl::Ints ints(&vm);
     impl::Jump jmps(&vm);
 

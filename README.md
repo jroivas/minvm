@@ -2,17 +2,20 @@
 
 Simple imaginary VM.
 
+Copyright (c) 2014 Jouni Roivas <jroivas@iki.fi>
+
 
 ## Design
 
-Designed to be easily extended. Framework itself does not make big assumptions about architecture.
+Designed to be easily extended. Framework itself does not make assumptions about the architecture.
 Only restriction is that first character is OPCODE. Opcodes are 8 bit.
+Opcodes may have varying amount of parameters and can be dependant of the opcode.
 
-Different opcode handlers can be implemented separately. Custom opcodes are supported as well.
+Different opcode handlers can be implemented separately. Custom opcodes can be easily added.
 
-When opcode is met, the handler is searched from opcode table. Table contains opcode and handler function.
-Default handler is NOP which means no operation.
-Handler is given current VM pointer so it can access all registers and memory.
+When opcode is met, the handler is searched from opcode table. Table contains opcode mapped to a handler function.
+Default handler just throws exception, so used opcodes must be explicitly implemented.
+Pointer to current VM is given as a parameter to handler, so it can access all registers and memory.
 Implementation of next bytes depends on opcode. It can have from zero to any amount of arguments.
 Current implementation has variable length opcodes, but nothing prevents from implementing fixed length opcodes.
 
@@ -21,14 +24,13 @@ Every handler function should return boolean value. Return value determines if e
 
 ## Building
 
-You need C++11 capable compiler and CMake.
+You need C++11 capable compiler and CMake. Python needed for assembler.
 
     mkdir build
     cd build
     cmake ..
     make
     make test
-
 
 
 ## Assembler
@@ -43,4 +45,3 @@ gradually full blown tool.
 ## License
 
 MIT
-

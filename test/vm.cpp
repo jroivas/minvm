@@ -1,6 +1,7 @@
 #include "framework.hh"
 #include <vm.hh>
 #include <opcodes.hh>
+#include <nopstop.hh>
 #include <ints.hh>
 #include <strs.hh>
 
@@ -25,12 +26,29 @@ static void test_basic_opcodes()
 {
     core::VM vm;
 
-    // Get default NOP
-    assert(vm.get_opcode(0)(&vm));
-    assert(vm.get_opcode(1)(&vm));
-    assert(vm.get_opcode(100)(&vm));
+    // No default NOP
+    assertThrows(
+        std::string,
+        "Invalid opcode",
+        vm.get_opcode((uint8_t)core::Opcode::NOP)(&vm));
+    // No default STOP
+    assertThrows(
+        std::string,
+        "Invalid opcode",
+        vm.get_opcode((uint8_t)core::Opcode::STOP)(&vm));
 
-    // Test default stop
+    // No other opcodes
+    assertThrows(
+        std::string,
+        "Invalid opcode",
+        vm.get_opcode(100)(&vm));
+
+    impl::NopStop nopstop(&vm);
+
+    // Test NOP
+    assert(vm.get_opcode((uint8_t)core::Opcode::NOP)(&vm));
+
+    // Test STOP
     assert(!vm.get_opcode((uint8_t)core::Opcode::STOP)(&vm));
 }
 
@@ -75,19 +93,20 @@ static void test_memory_fetch()
 static void test_memory_step()
 {
     core::VM vm((uint8_t*)mem2, sizeof(mem2));
+    impl::NopStop nopstop(&vm);
+    impl::Ints ints(&vm);
+    impl::Strs strs(&vm);
 
-    // There's no int and str opcodes registered
-    // so it will execute NOP on every value
-
     assert(vm.step());
     assert(vm.step());
     assert(vm.step());
-    assert(vm.regs().pc() == 3);
+    assert(vm.regs().pc() == 12);
 };
 
 static void test_memory_exe()
 {
     core::VM vm((uint8_t*)mem2, sizeof(mem2));
+    impl::NopStop nopstop(&vm);
     impl::Ints ints(&vm);
     impl::Strs strs(&vm);
 
@@ -106,9 +125,10 @@ static void test_memory_exe()
 static void test_memory_limits()
 {
     core::VM vm((uint8_t*)mem3, sizeof(mem3));
+    impl::NopStop nopstop(&vm);
+    impl::Ints ints(&vm);
+    impl::Strs strs(&vm);
 
-    assert(vm.step());
-    assert(vm.step());
     assert(vm.step());
 
     assertThrows(
