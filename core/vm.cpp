@@ -58,7 +58,7 @@ bool VM::step()
 {
     Opcode op = fetch();
     ++m_ticks;
-    //std::cout << (int) op << "\n";
+
     return m_opcodes[(uint8_t)op](this);
 }
 
@@ -114,14 +114,18 @@ core::Heap &VM::heap(uint64_t pos)
 
 uint8_t VM::mem(uint64_t pos) const
 {
-/*
-    if (pos >= m_size)
-        throw std::string("Memory access out of bounds");
-*/
     if (pos >= m_size)
         return get_heap(pos - m_size);
 
     return m_mem[pos];
+}
+
+void VM::set_mem(uint64_t pos, uint8_t val)
+{
+    if (pos >= m_size)
+        heap(pos - m_size)[pos - m_size] = val;
+    else
+        throw std::string("Write attempt to read only memory");
 }
 
 bool VM::invalid_opcode(VM *)

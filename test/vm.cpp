@@ -173,7 +173,6 @@ static void test_heap_add_double()
     assert(vm.heap_size() == 20);
 }
 
-
 static void test_heap_access()
 {
     core::VM vm;
@@ -199,6 +198,38 @@ static void test_heap_access()
         h[10]);
 }
 
+static void test_memory_access()
+{
+    core::VM vm((uint8_t*)mem1, sizeof(mem1));
+
+    vm.add_heap(10);
+
+    assert(vm.mem(0) == (uint8_t)core::Opcode::LOAD_INT8);
+    assert(vm.mem(1) == 0);
+    assert(vm.mem(2) == 5);
+
+    vm.set_mem(15, 0x42);
+    assert(vm.mem(15) == 0x42);
+
+    vm.set_mem(12, 0x40);
+    assert(vm.mem(12) == 0x40);
+
+    assertThrows(
+        std::string,
+        "Write attempt to read only memory",
+        vm.set_mem(1, 1));
+
+    assertThrows(
+        std::string,
+        "Write attempt to read only memory",
+        vm.set_mem(10, 0x38));
+
+    assertThrows(
+        std::string,
+        "Invalid heap access",
+        vm.set_mem(30, 0x77));
+}
+
 void test_vm()
 {
     TEST_CASE(test_basic_opcodes);
@@ -210,4 +241,5 @@ void test_vm()
     TEST_CASE(test_heap_add);
     TEST_CASE(test_heap_add_double);
     TEST_CASE(test_heap_access);
+    TEST_CASE(test_memory_access);
 }

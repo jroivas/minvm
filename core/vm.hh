@@ -66,6 +66,7 @@ public:
         return m_size;
     }
     uint8_t mem(uint64_t pos) const;
+    void set_mem(uint64_t pos, uint8_t val);
 
 private:
     static bool invalid_opcode(VM *);
