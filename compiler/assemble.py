@@ -106,15 +106,16 @@ class Parser:
         0
         >>> p.parse_label('a12-,')
         False
+        >>> p.parse_label('test_label')
+        True
         >>> 'a12-,' in p.labels
         False
         >>> p.parse_label('daud8912eh8921he')
         True
-        >>> p.parse_label('test_label')
-        False
         """
-        if not data.isalnum():
-            return False
+        for c in data:
+            if not (c.isalnum() or c == '_'):
+                return False
         if self.debug and data not in self.labels:
             print ('LABEL: %s' % (data))
         self.labels[data] = self.line
@@ -353,11 +354,13 @@ class Parser:
 
     def parse_load_2args(self, data):
         """
+        >>> p = Parser('')
         """
         reg = self.parse_reg(data[0])
 
         value = data[1]
-        if value.isdigit():
+        # Support int or negative int
+        if value.isdigit() or (value[0] == '-' and value[1:].isdigit()):
             # Int
             val = int(value)
             (cnt, val) = self.output_num(val)
@@ -859,7 +862,7 @@ class Parser:
         """
         >>> p = Parser('')
         >>> p.stub_2regs(8, 'name', 'R1, R2')
-        '\\x08\\x01\\x02'
+        ('\\x08\\x01\\x02', 1, 2)
         >>> p.stub_2regs(8, 'name', 'a, b') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
@@ -874,7 +877,7 @@ class Parser:
         ParseError: Unsupported name:  @0
         >>> p.code = ''
         >>> p.stub_2regs(8, 'name', 'R6, R0')
-        '\\x08\\x06\\x00'
+        ('\\x08\\x06\\x00', 6, 0)
         """
         data = [x.strip() for x in opts.split(',')]
         if len(data) == 2:
@@ -887,7 +890,7 @@ class Parser:
         else:
             raise ParseError('Unsupported %s: %s @%s' % (name, opts, self.line))
 
-        return self.code
+        return (self.code, reg1, reg2)
 
     def stub_3regs(self, opcode, name, opts):
         """
@@ -930,7 +933,21 @@ class Parser:
         return self.code
 
     def parse_mov(self, opts):
-        return self.stub_2regs(opcodes.MOV, 'MOV', opts)
+        """
+        >>> p = Parser('')
+        >>> p.parse_mov('R1, R2')
+        Traceback (most recent call last):
+        ..
+        ParseError: Using unused register for MOV: R1, R2 @0
+        >>> p.regmap[2] = 'int'
+        >>> p.parse_mov('R1, R2')
+        '\"\\x01\\x02"\\x01\\x02'
+        """
+        (res, reg1, reg2) = self.stub_2regs(opcodes.MOV, 'MOV', opts)
+        if not reg2 in self.regmap:
+            raise ParseError('Using unused register for MOV: %s @%s' % (opts, self.line))
+        self.regmap[reg1] = self.regmap[reg2]
+        return res
 
     def parse_add(self, opts):
         return self.stub_3regs(opcodes.ADD_INT, 'ADD', opts)
@@ -1157,22 +1174,26 @@ class Parser:
             tmp = 0
         else:
             tmp = line + 1
+
+        inc = 1
+        if tmp > target:
+            inc = -1
         size = 0
-        while tmp < target:
-            if tmp in self.output:
+        while tmp != target:
+            if tmp == line:
+                pass
+            elif tmp in self.output:
                 if self.output[tmp][:5] == Parser.__MAGIC_JUMP:
                     return (False, size)
                 size += len(self.output[tmp])
-            tmp += 1
-        #print (bits, size)
+            tmp += inc
 
         if oper == 1:
             size += diff
         elif oper == 2:
             size -= diff
-        #print (bits, size)
 
-        return (True, size)
+        return (True, size * inc)
 
     def fix_line(self, line, size):
         """
@@ -1189,7 +1210,12 @@ class Parser:
 
         outnum = size
         if append_bits == 1:
-            outnum += bits
+            if outnum < 0:
+                outnum -= bits
+            else:
+                outnum += bits
+        if outnum < 0:
+            outnum -= len(data)
 
         num = self.output_num(outnum, False)
         while len(num) < bits / 8:
@@ -1233,7 +1259,7 @@ class Parser:
             flines = self.fixme_lines()
             tries += 1
             if tries >= 100:
-                break
+                raise ParseError("Can't parse FIXME lines: %s" % (flines))
 
     def apply_post_data(self):
         """
