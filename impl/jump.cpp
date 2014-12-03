@@ -24,8 +24,8 @@ Jump::Jump(VM *vm)
 bool Jump::conditional(
     core::VM *vm, uint8_t algo, uint8_t reg1, uint8_t reg2)
 {
-    uint64_t val1 = vm->regs().get_int(reg1);
-    uint64_t val2 = vm->regs().get_int(reg2);
+    uint64_t val1 = (reg1>0xf)?(reg1>>4):vm->regs().get_int(reg1);
+    uint64_t val2 = (reg2>0xf)?(reg2>>4):vm->regs().get_int(reg2);
 
     switch (algo) {
         case 0: return val1 == val2;

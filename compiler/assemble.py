@@ -262,6 +262,9 @@ class Parser:
                 got_dot = True
         return got_digit
 
+    def is_int(self, data):
+        return data and (data.isdigit() or (data[0] == '-' and data[1:].isdigit()))
+
     def parse_reg(self, regdata):
         """
         >>> p = Parser('')
@@ -288,7 +291,10 @@ class Parser:
         """
         regdata = regdata.upper()
         if regdata != 'PC' and regdata[0] != 'R':
-            raise ParseError('Invalid register: %s @%s' % (regdata, self.line))
+            if self.is_int(regdata) and int(regdata) < 16:
+                return (int(regdata) << 4)
+            else:
+                raise ParseError('Invalid register: %s @%s' % (regdata, self.line))
 
         if regdata == 'PC':
             return -1
@@ -360,7 +366,7 @@ class Parser:
 
         value = data[1]
         # Support int or negative int
-        if value.isdigit() or (value[0] == '-' and value[1:].isdigit()):
+        if self.is_int(value):
             # Int
             val = int(value)
             (cnt, val) = self.output_num(val)

@@ -69,6 +69,7 @@ int main(int argc, char **argv)
     std::string code(
         (std::istreambuf_iterator<char>(input)),
         std::istreambuf_iterator<char>());
+    input.close();
 
     VM vm((uint8_t*)code.data(), code.length());
     auto debug = args.find("debug");

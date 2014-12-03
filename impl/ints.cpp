@@ -161,10 +161,10 @@ bool Ints::add_int(VM *vm)
     uint8_t reg2 = vm->fetch8();
     uint8_t reg3 = vm->fetch8();
 
-    vm->regs().put_int(
-        reg1,
-        vm->regs().get_int(reg2) +
-        vm->regs().get_int(reg3));
+    uint64_t val1 = (reg2>0xf)?(reg2>>4):vm->regs().get_int(reg2);
+    uint64_t val2 = (reg3>0xf)?(reg3>>4):vm->regs().get_int(reg3);
+
+    vm->regs().put_int(reg1, val1 + val2);
 
     return true;
 }
@@ -176,10 +176,10 @@ bool Ints::sub_int(VM *vm)
     uint8_t reg2 = vm->fetch8();
     uint8_t reg3 = vm->fetch8();
 
-    vm->regs().put_int(
-        reg1,
-        vm->regs().get_int(reg2) -
-        vm->regs().get_int(reg3));
+    uint64_t val1 = (reg2>0xf)?(reg2>>4):vm->regs().get_int(reg2);
+    uint64_t val2 = (reg3>0xf)?(reg3>>4):vm->regs().get_int(reg3);
+
+    vm->regs().put_int(reg1, val1 - val2);
 
     return true;
 }
@@ -191,10 +191,10 @@ bool Ints::mul_int(core::VM *vm)
     uint8_t reg2 = vm->fetch8();
     uint8_t reg3 = vm->fetch8();
 
-    vm->regs().put_int(
-        reg1,
-        vm->regs().get_int(reg2) *
-        vm->regs().get_int(reg3));
+    uint64_t val1 = (reg2>0xf)?(reg2>>4):vm->regs().get_int(reg2);
+    uint64_t val2 = (reg3>0xf)?(reg3>>4):vm->regs().get_int(reg3);
+
+    vm->regs().put_int(reg1, val1 * val2);
 
     return true;
 }
@@ -206,14 +206,13 @@ bool Ints::div_int(core::VM *vm)
     uint8_t reg2 = vm->fetch8();
     uint8_t reg3 = vm->fetch8();
 
-    uint64_t val1 = vm->regs().get_int(reg2);
-    uint64_t val2 = vm->regs().get_int(reg3);
+    uint64_t val1 = (reg2>0xf)?(reg2>>4):vm->regs().get_int(reg2);
+    uint64_t val2 = (reg3>0xf)?(reg3>>4):vm->regs().get_int(reg3);
 
     if (val2 == 0)
         throw std::string("Divide by zero!");
 
-    vm->regs().put_int(
-        reg1, val1 / val2);
+    vm->regs().put_int(reg1, val1 / val2);
 
     return true;
 }
@@ -225,14 +224,13 @@ bool Ints::mod_int(core::VM *vm)
     uint8_t reg2 = vm->fetch8();
     uint8_t reg3 = vm->fetch8();
 
-    uint64_t val1 = vm->regs().get_int(reg2);
-    uint64_t val2 = vm->regs().get_int(reg3);
+    uint64_t val1 = (reg2>0xf)?(reg2>>4):vm->regs().get_int(reg2);
+    uint64_t val2 = (reg3>0xf)?(reg3>>4):vm->regs().get_int(reg3);
 
     if (val2 == 0)
         throw std::string("Divide by zero!");
 
-    vm->regs().put_int(
-        reg1, val1 % val2);
+    vm->regs().put_int(reg1, val1 % val2);
 
     return true;
 }
