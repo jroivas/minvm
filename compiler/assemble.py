@@ -271,7 +271,7 @@ class Parser:
         >>> p.parse_reg('a') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
-        ParseError: Invalid register: A @0
+        ParseError: Invalid register or immediate: A @0
         >>> p.parse_reg('r') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
@@ -291,10 +291,10 @@ class Parser:
         """
         regdata = regdata.upper()
         if regdata != 'PC' and regdata[0] != 'R':
-            if self.is_int(regdata) and int(regdata) < 16:
+            if self.is_int(regdata) and int(regdata) < 16 and int(regdata) >= 0:
                 return (int(regdata) << 4)
             else:
-                raise ParseError('Invalid register: %s @%s' % (regdata, self.line))
+                raise ParseError('Invalid register or immediate: %s @%s' % (regdata, self.line))
 
         if regdata == 'PC':
             return -1
@@ -975,7 +975,9 @@ class Parser:
         >>> p = Parser('')
         >>> p.parse_heap('R1')
         '#\\x01'
-        >>> p.parse_heap('1') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+        >>> p.parse_heap('1')
+        '#\\x01#\\x10'
+        >>> p.parse_heap('t1') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
         ParseError: Invalid register: 1 @0
@@ -1006,10 +1008,12 @@ class Parser:
         Traceback (most recent call last):
         ...
         ParseError: Unsupported INFO: 1 @0
-        >>> p.parse_info('1, 1') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+        >>> p.parse_info('1, 1')
+        '$\\x01\\x01$\\x10\\x01'
+        >>> p.parse_info('1a, 1b') # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
-        ParseError: Invalid register: 1 @0
+        ParseError: Invalid register or immediate: 1A @0
         """
         data = [x.strip() for x in opts.split(',')]
         if len(data) == 2:

@@ -2,6 +2,7 @@
 LOAD R0, 1764
 
 ; Other variables
+LOAD R11, -1
 LOAD R3, 0
 MOV R2, R0
 
@@ -18,7 +19,7 @@ sqrt:
     SUB R3, R1, R2
     JMP R3 >= 0, sqrt_end
 
-    MUL R3, R3, -1
+    MUL R3, R3, R11
 
 sqrt_end:
     JMP R3 > 1, sqrt
