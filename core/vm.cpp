@@ -51,7 +51,13 @@ uint8_t VM::fetch8()
 
 Opcode VM::fetch()
 {
-    return (Opcode)fetch8();
+    m_opcode = Opcode(fetch8());
+    return m_opcode;
+}
+
+Opcode VM::current_opcode() const
+{
+    return m_opcode;
 }
 
 bool VM::step()
@@ -59,7 +65,7 @@ bool VM::step()
     Opcode op = fetch();
     ++m_ticks;
 
-    return m_opcodes[(uint8_t)op](this);
+    return m_opcodes[op()](this);
 }
 
 void VM::add_heap(uint64_t size)
@@ -128,7 +134,8 @@ void VM::set_mem(uint64_t pos, uint8_t val)
         throw std::string("Write attempt to read only memory");
 }
 
-bool VM::invalid_opcode(VM *)
+bool VM::invalid_opcode(VM *vm)
 {
-    throw std::string("Invalid opcode");
+    throw std::string("Invalid opcode: ")
+        + std::to_string(*vm->current_opcode());
 }

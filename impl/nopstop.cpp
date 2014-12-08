@@ -1,13 +1,14 @@
 #include "nopstop.hh"
+#include "opcodes.hh"
 
 using core::VM;
-using core::Opcode;
 using impl::NopStop;
+using impl::Opcode;
 
 NopStop::NopStop(core::VM *vm)
 {
-    vm->opcode((uint32_t)Opcode::NOP, NopStop::nop);
-    vm->opcode((uint32_t)Opcode::STOP, NopStop::stop);
+    vm->opcode(Opcode::NOP(), NopStop::nop);
+    vm->opcode(Opcode::STOP(), NopStop::stop);
 }
 
 bool NopStop::nop(core::VM *vm)

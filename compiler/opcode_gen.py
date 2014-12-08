@@ -7,24 +7,32 @@ def parse(f):
     code = 0
     while True:
         line = f.readline()
-        if 'Opcode' in line and 'class' in line and 'enum' in line:
+        if not line:
+            break
+        if 'core::Opcode' in line and 'class' in line:
             got_list = True
             continue
         elif got_list:
-            if '{' in line:
+            if 'core::Opcode' not in line:
                 continue
-            if '}' in line:
+            if '};' in line:
                 return
 
-            line = line.replace(',','').strip()
-            if '=' in line:
-                tmp = line.split('=')
-                line = tmp[0].strip()
-                code = int(tmp[1])
-
-            if line and got_list:
-                print ("%s = %s" % (line, code))
-                code += 1
+            line = line.replace('static','')
+            line = line.replace('core::Opcode','')
+            line = line.replace('{','')
+            line = line.replace('}','')
+            line = line.replace('(','')
+            line = line.replace(')','')
+            line = line.replace(';','')
+            line = line.replace('return','')
+            while True:
+                a = line.replace('  ', ' ')
+                if a == line:
+                    break
+                line = a
+            line = [x.strip() for x in line.strip().split(' ')]
+            print ' = '.join(line)
 
 if __name__ == '__main__':
     print ("# Generated opcodes")

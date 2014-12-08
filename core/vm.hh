@@ -22,9 +22,16 @@ public:
 
     void load(uint8_t *mem, uint64_t size);
     Opcode fetch();
+    Opcode current_opcode() const;
     uint8_t fetch8();
 
     bool step();
+    inline void opcode(
+        Opcode num,
+        std::function<bool (VM *)> func)
+    {
+        m_opcodes[num()] = func;
+    }
     inline void opcode(
         uint8_t num,
         std::function<bool (VM *)> func)
@@ -32,9 +39,14 @@ public:
         m_opcodes[num] = func;
     }
 
-    inline std::function<bool (VM *)> get_opcode(uint8_t num)
+    inline std::function<bool (VM *)> get_opcode(uint8_t num) const
     {
         return m_opcodes[num];
+    }
+
+    inline std::function<bool (VM *)> get_opcode(Opcode num) const
+    {
+        return m_opcodes[num()];
     }
 
     inline bool debug() const
@@ -82,6 +94,7 @@ private:
 
     uint64_t m_ticks;
     bool m_debug;
+    Opcode m_opcode;
 };
 
 }

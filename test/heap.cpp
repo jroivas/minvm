@@ -2,6 +2,7 @@
 #include <core/heap.hh>
 #include <impl/heap.hh>
 #include <impl/ints.hh>
+#include <impl/opcodes.hh>
 
 static void test_heap_basic()
 {
@@ -66,9 +67,9 @@ static void test_heap_access_exception()
 static void test_heap_add()
 {
     static uint8_t mem[] = {
-        (uint8_t)core::Opcode::LOAD_INT8, 0, 12,
-        (uint8_t)core::Opcode::HEAP, 0,
-        (uint8_t)core::Opcode::HEAP, 0,
+        *impl::Opcode::LOAD_INT8(), 0, 12,
+        *impl::Opcode::HEAP(), 0,
+        *impl::Opcode::HEAP(), 0,
     };
 
     core::VM vm((uint8_t*)mem, sizeof(mem));
@@ -89,13 +90,13 @@ static void test_heap_add()
 static void test_heap_info()
 {
     static uint8_t mem[] = {
-        (uint8_t)core::Opcode::INFO, 0, (uint8_t)core::Info::Info,
-        (uint8_t)core::Opcode::INFO, 0, (uint8_t)core::Info::Ticks,
-        (uint8_t)core::Opcode::INFO, 0, (uint8_t)core::Info::HeapSize,
-        (uint8_t)core::Opcode::INFO, 0, (uint8_t)core::Info::HeapSize,
-        (uint8_t)core::Opcode::INFO, 0, (uint8_t)core::Info::HeapStart,
-        (uint8_t)core::Opcode::INFO, 0, (uint8_t)core::Info::Ticks,
-        (uint8_t)core::Opcode::INFO, 0, 0xff
+        *impl::Opcode::INFO(), 0, (uint8_t)core::Info::Info,
+        *impl::Opcode::INFO(), 0, (uint8_t)core::Info::Ticks,
+        *impl::Opcode::INFO(), 0, (uint8_t)core::Info::HeapSize,
+        *impl::Opcode::INFO(), 0, (uint8_t)core::Info::HeapSize,
+        *impl::Opcode::INFO(), 0, (uint8_t)core::Info::HeapStart,
+        *impl::Opcode::INFO(), 0, (uint8_t)core::Info::Ticks,
+        *impl::Opcode::INFO(), 0, 0xff
     };
     core::VM vm((uint8_t*)mem, sizeof(mem));
     impl::Heap heaps(&vm);

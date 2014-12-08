@@ -3,30 +3,30 @@
 #include <iostream>
 
 using core::VM;
-using core::Opcode;
+using impl::Opcode;
 using impl::Ints;
 
 Ints::Ints(VM *vm)
 {
-    vm->opcode((uint32_t)Opcode::LOAD_INT, Ints::load_int);
-    vm->opcode((uint32_t)Opcode::LOAD_INT_MEM, Ints::load_int_mem);
+    vm->opcode(Opcode::LOAD_INT(), Ints::load_int);
+    vm->opcode(Opcode::LOAD_INT_MEM(), Ints::load_int_mem);
 
-    vm->opcode((uint32_t)Opcode::LOAD_INT8, Ints::load_int8);
-    vm->opcode((uint32_t)Opcode::LOAD_INT16, Ints::load_int16);
-    vm->opcode((uint32_t)Opcode::LOAD_INT32, Ints::load_int32);
-    vm->opcode((uint32_t)Opcode::LOAD_INT64, Ints::load_int64);
+    vm->opcode(Opcode::LOAD_INT8(), Ints::load_int8);
+    vm->opcode(Opcode::LOAD_INT16(), Ints::load_int16);
+    vm->opcode(Opcode::LOAD_INT32(), Ints::load_int32);
+    vm->opcode(Opcode::LOAD_INT64(), Ints::load_int64);
 
-    vm->opcode((uint32_t)Opcode::INC_INT, Ints::inc_int);
-    vm->opcode((uint32_t)Opcode::DEC_INT, Ints::dec_int);
+    vm->opcode(Opcode::INC_INT(), Ints::inc_int);
+    vm->opcode(Opcode::DEC_INT(), Ints::dec_int);
 
-    vm->opcode((uint32_t)Opcode::ADD_INT, Ints::add_int);
-    vm->opcode((uint32_t)Opcode::SUB_INT, Ints::sub_int);
+    vm->opcode(Opcode::ADD_INT(), Ints::add_int);
+    vm->opcode(Opcode::SUB_INT(), Ints::sub_int);
 
-    vm->opcode((uint32_t)Opcode::MUL_INT, Ints::mul_int);
-    vm->opcode((uint32_t)Opcode::DIV_INT, Ints::div_int);
-    vm->opcode((uint32_t)Opcode::MOD_INT, Ints::mod_int);
+    vm->opcode(Opcode::MUL_INT(), Ints::mul_int);
+    vm->opcode(Opcode::DIV_INT(), Ints::div_int);
+    vm->opcode(Opcode::MOD_INT(), Ints::mod_int);
 
-    vm->opcode((uint32_t)Opcode::PRINT_INT, Ints::print_int);
+    vm->opcode(Opcode::PRINT_INT(), Ints::print_int);
 }
 
 bool Ints::load_int(core::VM *vm)

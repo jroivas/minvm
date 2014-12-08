@@ -1,13 +1,13 @@
 #include "framework.hh"
 #include <vm.hh>
-#include <opcodes.hh>
+#include <impl/opcodes.hh>
 #include <ints.hh>
 #include <iomanip>
 
 static void test_ints_load_int8()
 {
     static uint8_t mem[] = {
-        (uint8_t)core::Opcode::LOAD_INT8, 1, 0x42
+        *impl::Opcode::LOAD_INT8(), 1, 0x42
     };
     core::VM vm((uint8_t*)mem, sizeof(mem));
     impl::Ints ints(&vm);
@@ -22,7 +22,7 @@ static void test_ints_load_int8()
 static void test_ints_load_int16()
 {
     static uint8_t mem[] = {
-        (uint8_t)core::Opcode::LOAD_INT16, 1, 0x42, 0x33
+        *impl::Opcode::LOAD_INT16(), 1, 0x42, 0x33
     };
     core::VM vm((uint8_t*)mem, sizeof(mem));
     impl::Ints ints(&vm);
@@ -35,7 +35,7 @@ static void test_ints_load_int16()
 static void test_ints_load_int32()
 {
     static uint8_t mem[] = {
-        (uint8_t)core::Opcode::LOAD_INT32, 1, 0x42, 0x33, 0x21, 0x15
+        *impl::Opcode::LOAD_INT32(), 1, 0x42, 0x33, 0x21, 0x15
     };
     core::VM vm((uint8_t*)mem, sizeof(mem));
     impl::Ints ints(&vm);
@@ -48,7 +48,7 @@ static void test_ints_load_int32()
 static void test_ints_load_int64()
 {
     static uint8_t mem[] = {
-        (uint8_t)core::Opcode::LOAD_INT64,
+        *impl::Opcode::LOAD_INT64(),
             1, 0x42, 0x33, 0x21, 0x15, 1, 2, 3, 4
     };
     core::VM vm((uint8_t*)mem, sizeof(mem));
@@ -60,9 +60,9 @@ static void test_ints_load_int64()
 }
 
 static uint8_t mem2[] = {
-    (uint8_t)core::Opcode::LOAD_INT_MEM,
+    *impl::Opcode::LOAD_INT_MEM(),
         5, 1, 0, 0, 0, 0, 0, 0, 0, 12,
-    (uint8_t)core::Opcode::STOP,
+    *impl::Opcode::STOP(),
     0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x50
 };
 
@@ -150,9 +150,9 @@ static void test_ints_load_int_mem_9bytes()
 }
 
 static uint8_t mem3[] = {
-    (uint8_t)core::Opcode::LOAD_INT8, 2, 8,
-    (uint8_t)core::Opcode::LOAD_INT, 5, 1, 2,
-    (uint8_t)core::Opcode::STOP,
+    *impl::Opcode::LOAD_INT8(), 2, 8,
+    *impl::Opcode::LOAD_INT(), 5, 1, 2,
+    *impl::Opcode::STOP(),
     0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x50
 };
 
@@ -195,10 +195,10 @@ static void test_ints_load_int_4bytes()
 static void test_ints_inc()
 {
     static uint8_t mem[] = {
-        (uint8_t)core::Opcode::LOAD_INT16, 1, 0x42, 0x33,
-        (uint8_t)core::Opcode::INC_INT, 0,
-        (uint8_t)core::Opcode::INC_INT, 1,
-        (uint8_t)core::Opcode::INC_INT, 1
+        *impl::Opcode::LOAD_INT16(), 1, 0x42, 0x33,
+        *impl::Opcode::INC_INT(), 0,
+        *impl::Opcode::INC_INT(), 1,
+        *impl::Opcode::INC_INT(), 1
     };
     core::VM vm((uint8_t*)mem, sizeof(mem));
     impl::Ints ints(&vm);
@@ -220,10 +220,10 @@ static void test_ints_inc()
 static void test_ints_dec()
 {
     static uint8_t mem[] = {
-        (uint8_t)core::Opcode::LOAD_INT16, 1, 0x42, 0x33,
-        (uint8_t)core::Opcode::DEC_INT, 0,
-        (uint8_t)core::Opcode::DEC_INT, 1,
-        (uint8_t)core::Opcode::DEC_INT, 1
+        *impl::Opcode::LOAD_INT16(), 1, 0x42, 0x33,
+        *impl::Opcode::DEC_INT(), 0,
+        *impl::Opcode::DEC_INT(), 1,
+        *impl::Opcode::DEC_INT(), 1
     };
     core::VM vm((uint8_t*)mem, sizeof(mem));
     impl::Ints ints(&vm);
@@ -245,10 +245,10 @@ static void test_ints_dec()
 static void test_ints_add()
 {
     static uint8_t mem[] = {
-        (uint8_t)core::Opcode::LOAD_INT8, 1, 0x0a,
-        (uint8_t)core::Opcode::ADD_INT, 0, 1, 1,
-        (uint8_t)core::Opcode::ADD_INT, 2, 0, 0,
-        (uint8_t)core::Opcode::ADD_INT, 3, 1, 0,
+        *impl::Opcode::LOAD_INT8(), 1, 0x0a,
+        *impl::Opcode::ADD_INT(), 0, 1, 1,
+        *impl::Opcode::ADD_INT(), 2, 0, 0,
+        *impl::Opcode::ADD_INT(), 3, 1, 0,
     };
     core::VM vm((uint8_t*)mem, sizeof(mem));
     impl::Ints ints(&vm);
@@ -270,11 +270,11 @@ static void test_ints_add()
 static void test_ints_sub()
 {
     static uint8_t mem[] = {
-        (uint8_t)core::Opcode::LOAD_INT8, 0, 0x02,
-        (uint8_t)core::Opcode::LOAD_INT8, 1, 0x0a,
-        (uint8_t)core::Opcode::SUB_INT, 3, 1, 0,
-        (uint8_t)core::Opcode::SUB_INT, 4, 3, 0,
-        (uint8_t)core::Opcode::SUB_INT, 5, 4, 1,
+        *impl::Opcode::LOAD_INT8(), 0, 0x02,
+        *impl::Opcode::LOAD_INT8(), 1, 0x0a,
+        *impl::Opcode::SUB_INT(), 3, 1, 0,
+        *impl::Opcode::SUB_INT(), 4, 3, 0,
+        *impl::Opcode::SUB_INT(), 5, 4, 1,
     };
     core::VM vm((uint8_t*)mem, sizeof(mem));
     impl::Ints ints(&vm);
@@ -299,11 +299,11 @@ static void test_ints_sub()
 static void test_ints_mul()
 {
     static uint8_t mem[] = {
-        (uint8_t)core::Opcode::LOAD_INT8, 0, 0x02,
-        (uint8_t)core::Opcode::LOAD_INT8, 1, 0x0a,
-        (uint8_t)core::Opcode::MUL_INT, 3, 1, 0,
-        (uint8_t)core::Opcode::MUL_INT, 4, 3, 0,
-        (uint8_t)core::Opcode::MUL_INT, 5, 4, 1,
+        *impl::Opcode::LOAD_INT8(), 0, 0x02,
+        *impl::Opcode::LOAD_INT8(), 1, 0x0a,
+        *impl::Opcode::MUL_INT(), 3, 1, 0,
+        *impl::Opcode::MUL_INT(), 4, 3, 0,
+        *impl::Opcode::MUL_INT(), 5, 4, 1,
     };
     core::VM vm((uint8_t*)mem, sizeof(mem));
     impl::Ints ints(&vm);
@@ -328,11 +328,11 @@ static void test_ints_mul()
 static void test_ints_div()
 {
     static uint8_t mem[] = {
-        (uint8_t)core::Opcode::LOAD_INT8, 0, 0x02,
-        (uint8_t)core::Opcode::LOAD_INT8, 1, 0x0a,
-        (uint8_t)core::Opcode::DIV_INT, 3, 1, 0,
-        (uint8_t)core::Opcode::DIV_INT, 4, 3, 0,
-        (uint8_t)core::Opcode::DIV_INT, 5, 4, 1,
+        *impl::Opcode::LOAD_INT8(), 0, 0x02,
+        *impl::Opcode::LOAD_INT8(), 1, 0x0a,
+        *impl::Opcode::DIV_INT(), 3, 1, 0,
+        *impl::Opcode::DIV_INT(), 4, 3, 0,
+        *impl::Opcode::DIV_INT(), 5, 4, 1,
     };
     core::VM vm((uint8_t*)mem, sizeof(mem));
     impl::Ints ints(&vm);
@@ -357,12 +357,12 @@ static void test_ints_div()
 static void test_ints_mod()
 {
     static uint8_t mem[] = {
-        (uint8_t)core::Opcode::LOAD_INT8, 0, 0x02,
-        (uint8_t)core::Opcode::LOAD_INT8, 1, 0x0a,
-        (uint8_t)core::Opcode::LOAD_INT8, 2, 3,
-        (uint8_t)core::Opcode::MOD_INT, 3, 1, 0,
-        (uint8_t)core::Opcode::MOD_INT, 4, 1, 2,
-        (uint8_t)core::Opcode::MOD_INT, 5, 0, 2,
+        *impl::Opcode::LOAD_INT8(), 0, 0x02,
+        *impl::Opcode::LOAD_INT8(), 1, 0x0a,
+        *impl::Opcode::LOAD_INT8(), 2, 3,
+        *impl::Opcode::MOD_INT(), 3, 1, 0,
+        *impl::Opcode::MOD_INT(), 4, 1, 2,
+        *impl::Opcode::MOD_INT(), 5, 0, 2,
     };
     core::VM vm((uint8_t*)mem, sizeof(mem));
     impl::Ints ints(&vm);
@@ -389,10 +389,10 @@ static void test_ints_mod()
 static void test_ints_print()
 {
     static uint8_t mem[] = {
-        (uint8_t)core::Opcode::LOAD_INT8, 0, 0x02,
-        (uint8_t)core::Opcode::LOAD_INT8, 1, 0x42,
-        (uint8_t)core::Opcode::PRINT_INT, 0,
-        (uint8_t)core::Opcode::PRINT_INT, 1,
+        *impl::Opcode::LOAD_INT8(), 0, 0x02,
+        *impl::Opcode::LOAD_INT8(), 1, 0x42,
+        *impl::Opcode::PRINT_INT(), 0,
+        *impl::Opcode::PRINT_INT(), 1,
     };
 
     core::VM vm((uint8_t*)mem, sizeof(mem));
@@ -422,8 +422,8 @@ static void test_ints_print()
 static void test_ints_div_by_zero()
 {
     static uint8_t mem[] = {
-        (uint8_t)core::Opcode::LOAD_INT8, 1, 0x02,
-        (uint8_t)core::Opcode::DIV_INT, 3, 1, 0
+        *impl::Opcode::LOAD_INT8(), 1, 0x02,
+        *impl::Opcode::DIV_INT(), 3, 1, 0
     };
 
     core::VM vm((uint8_t*)mem, sizeof(mem));
@@ -444,8 +444,8 @@ static void test_ints_div_by_zero()
 static void test_ints_mod_by_zero()
 {
     static uint8_t mem[] = {
-        (uint8_t)core::Opcode::LOAD_INT8, 1, 0x02,
-        (uint8_t)core::Opcode::MOD_INT, 3, 1, 0
+        *impl::Opcode::LOAD_INT8(), 1, 0x02,
+        *impl::Opcode::MOD_INT(), 3, 1, 0
     };
 
     core::VM vm((uint8_t*)mem, sizeof(mem));

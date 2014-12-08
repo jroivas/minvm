@@ -3,12 +3,12 @@
 #include <iostream>
 
 using core::VM;
-using core::Opcode;
+using impl::Opcode;
 using impl::Random;
 
 Random::Random(VM *vm)
 {
-    vm->opcode((uint32_t)Opcode::RANDOM, Random::random);
+    vm->opcode(Opcode::RANDOM(), Random::random);
 }
 
 bool Random::random(core::VM *vm)

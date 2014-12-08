@@ -3,13 +3,13 @@
 #include <iostream>
 
 using core::VM;
-using core::Opcode;
+using impl::Opcode;
 using impl::Heap;
 
 Heap::Heap(VM *vm)
 {
-    vm->opcode((uint32_t)Opcode::HEAP, Heap::heap);
-    vm->opcode((uint32_t)Opcode::INFO, Heap::info);
+    vm->opcode(Opcode::HEAP(), Heap::heap);
+    vm->opcode(Opcode::INFO(), Heap::info);
 }
 
 bool Heap::heap(core::VM *vm)

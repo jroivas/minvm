@@ -6,3 +6,6 @@ add_library(impl STATIC
     jump.cpp
     heap.cpp
     mov.cpp)
+
+include_directories(.)
+include_directories(..)

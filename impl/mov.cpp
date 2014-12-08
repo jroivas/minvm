@@ -3,12 +3,12 @@
 #include <iostream>
 
 using core::VM;
-using core::Opcode;
+using impl::Opcode;
 using impl::Mov;
 
 Mov::Mov(VM *vm)
 {
-    vm->opcode((uint32_t)Opcode::MOV, Mov::mov);
+    vm->opcode(Opcode::MOV(), Mov::mov);
 }
 
 bool Mov::mov(core::VM *vm)

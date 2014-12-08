@@ -2,12 +2,13 @@
 #include <ints.hh>
 #include <strs.hh>
 #include <mov.hh>
+#include <impl/opcodes.hh>
 
 static uint8_t mem[] = {
-    (uint8_t)core::Opcode::LOAD_INT8, 0, 42,
-    (uint8_t)core::Opcode::LOAD_STR, 5, 'a', 'b', 0,
-    (uint8_t)core::Opcode::MOV, 1, 0,
-    (uint8_t)core::Opcode::MOV, 10, 5,
+    *impl::Opcode::LOAD_INT8(), 0, 42,
+    *impl::Opcode::LOAD_STR(), 5, 'a', 'b', 0,
+    *impl::Opcode::MOV(), 1, 0,
+    *impl::Opcode::MOV(), 10, 5,
 };
 
 static void test_basic_mov()

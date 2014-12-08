@@ -8,17 +8,17 @@ using impl::Jump;
 
 Jump::Jump(VM *vm)
 {
-    vm->opcode((uint32_t)Opcode::JMP8, Jump::jump8);
-    vm->opcode((uint32_t)Opcode::JMP16, Jump::jump16);
-    vm->opcode((uint32_t)Opcode::JMP32, Jump::jump32);
-    vm->opcode((uint64_t)Opcode::JMP64, Jump::jump64);
-    vm->opcode((uint32_t)Opcode::JMP_INT, Jump::jump_int);
+    vm->opcode(Opcode::JMP8(), Jump::jump8);
+    vm->opcode(Opcode::JMP16(), Jump::jump16);
+    vm->opcode(Opcode::JMP32(), Jump::jump32);
+    vm->opcode(Opcode::JMP64(), Jump::jump64);
+    vm->opcode(Opcode::JMP_INT(), Jump::jump_int);
 
-    vm->opcode((uint32_t)Opcode::JMP_LE8, Jump::jump_le8);
-    vm->opcode((uint32_t)Opcode::JMP_LE16, Jump::jump_le16);
-    vm->opcode((uint32_t)Opcode::JMP_LE32, Jump::jump_le32);
-    vm->opcode((uint64_t)Opcode::JMP_LE64, Jump::jump_le64);
-    vm->opcode((uint32_t)Opcode::JMP_LE_INT, Jump::jump_le_int);
+    vm->opcode(Opcode::JMP_LE8(), Jump::jump_le8);
+    vm->opcode(Opcode::JMP_LE16(), Jump::jump_le16);
+    vm->opcode(Opcode::JMP_LE32(), Jump::jump_le32);
+    vm->opcode(Opcode::JMP_LE64(), Jump::jump_le64);
+    vm->opcode(Opcode::JMP_LE_INT(), Jump::jump_le_int);
 }
 
 bool Jump::conditional(

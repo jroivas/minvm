@@ -1,25 +1,26 @@
 #include "framework.hh"
 #include <vm.hh>
 #include <opcodes.hh>
+#include <impl/opcodes.hh>
 #include <nopstop.hh>
 #include <ints.hh>
 #include <strs.hh>
 
 static uint8_t mem1[] = {
-    (uint8_t)core::Opcode::LOAD_INT8, 0, 5,
-    (uint8_t)core::Opcode::LOAD_INT8, 1, 10,
-    (uint8_t)core::Opcode::LOAD_STR, 8, 't', 's', 't', 0
+    *impl::Opcode::LOAD_INT8(), 0, 5,
+    *impl::Opcode::LOAD_INT8(), 1, 10,
+    *impl::Opcode::LOAD_STR(), 8, 't', 's', 't', 0
 };
 
 static uint8_t mem2[] = {
-    (uint8_t)core::Opcode::LOAD_INT8, 0, 123,
-    (uint8_t)core::Opcode::LOAD_INT8, 1, 99,
-    (uint8_t)core::Opcode::LOAD_STR, 8, 'a', 'b', 'c', 0,
-    (uint8_t)core::Opcode::STOP
+    *impl::Opcode::LOAD_INT8(), 0, 123,
+    *impl::Opcode::LOAD_INT8(), 1, 99,
+    *impl::Opcode::LOAD_STR(), 8, 'a', 'b', 'c', 0,
+    *impl::Opcode::STOP()
 };
 
 static uint8_t mem3[] = {
-    (uint8_t)core::Opcode::LOAD_INT8, 0, 5
+    *impl::Opcode::LOAD_INT8(), 0, 5
 };
 
 static void test_basic_opcodes()
@@ -29,27 +30,27 @@ static void test_basic_opcodes()
     // No default NOP
     assertThrows(
         std::string,
-        "Invalid opcode",
-        vm.get_opcode((uint8_t)core::Opcode::NOP)(&vm));
+        "Invalid opcode: 0",
+        vm.get_opcode(impl::Opcode::NOP())(&vm));
     // No default STOP
     assertThrows(
         std::string,
-        "Invalid opcode",
-        vm.get_opcode((uint8_t)core::Opcode::STOP)(&vm));
+        "Invalid opcode: 0",
+        vm.get_opcode(impl::Opcode::STOP())(&vm));
 
     // No other opcodes
     assertThrows(
         std::string,
-        "Invalid opcode",
+        "Invalid opcode: 0",
         vm.get_opcode(100)(&vm));
 
     impl::NopStop nopstop(&vm);
 
     // Test NOP
-    assert(vm.get_opcode((uint8_t)core::Opcode::NOP)(&vm));
+    assert(vm.get_opcode(impl::Opcode::NOP())(&vm));
 
     // Test STOP
-    assert(!vm.get_opcode((uint8_t)core::Opcode::STOP)(&vm));
+    assert(!vm.get_opcode(impl::Opcode::STOP())(&vm));
 }
 
 static void test_empty_vm()
@@ -74,15 +75,15 @@ static void test_memory_fetch()
 
     vm.load((uint8_t*)mem1, sizeof(mem1));
 
-    assert(vm.fetch() == core::Opcode::LOAD_INT8);
+    assert(vm.fetch() == impl::Opcode::LOAD_INT8());
     assert(vm.fetch8() == 0);
     assert(vm.fetch8() == 5);
 
-    assert(vm.fetch() == core::Opcode::LOAD_INT8);
+    assert(vm.fetch() == impl::Opcode::LOAD_INT8());
     assert(vm.fetch8() == 1);
     assert(vm.fetch8() == 10);
 
-    assert(vm.fetch() == core::Opcode::LOAD_STR);
+    assert(vm.fetch() == impl::Opcode::LOAD_STR());
     assert(vm.fetch8() == 8);
     assert(vm.fetch8() == 't');
     assert(vm.fetch8() == 's');
@@ -204,7 +205,7 @@ static void test_memory_access()
 
     vm.add_heap(10);
 
-    assert(vm.mem(0) == (uint8_t)core::Opcode::LOAD_INT8);
+    assert(vm.mem(0) == *impl::Opcode::LOAD_INT8());
     assert(vm.mem(1) == 0);
     assert(vm.mem(2) == 5);
 

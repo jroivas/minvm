@@ -1,14 +1,14 @@
 #include "framework.hh"
 #include <vm.hh>
-#include <opcodes.hh>
+#include <impl/opcodes.hh>
 #include <strs.hh>
 
 static uint8_t mem[] = {
-    (uint8_t)core::Opcode::LOAD_STR, 0, 'A', 'b', 'E', 0x9, 0,
-    (uint8_t)core::Opcode::LOAD_STR, 1, 'R', 0,
-    (uint8_t)core::Opcode::LOAD_STR, 2, 'D', 'u', 'm', 'm', 'y', 0,
-    (uint8_t)core::Opcode::PRINT_STR, 0,
-    (uint8_t)core::Opcode::PRINT_STR, 2,
+    *impl::Opcode::LOAD_STR(), 0, 'A', 'b', 'E', 0x9, 0,
+    *impl::Opcode::LOAD_STR(), 1, 'R', 0,
+    *impl::Opcode::LOAD_STR(), 2, 'D', 'u', 'm', 'm', 'y', 0,
+    *impl::Opcode::PRINT_STR(), 0,
+    *impl::Opcode::PRINT_STR(), 2,
 };
 
 static void test_strs_load_str()

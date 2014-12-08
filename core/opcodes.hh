@@ -15,56 +15,42 @@ enum class Info : uint8_t
     HeapStart,
 };
 
-enum class Opcode : uint8_t
+class Opcode
 {
-    NOP = 0,
+public:
+    Opcode() : m_value(0) {}
+    Opcode(uint8_t val) : m_value(val) {}
+    Opcode(const Opcode &val) : m_value(val.m_value) {}
 
-    STORE_INT,
-    STORE_INT_MEM,
-    LOAD_INT,
-    LOAD_INT_MEM,
+    Opcode &operator=(const Opcode &other)
+    {
+        m_value = other.m_value;
+    }
 
-    LOAD_INT8,
-    LOAD_INT16,
-    LOAD_INT32,
-    LOAD_INT64,
+    bool operator==(const Opcode &other) const
+    {
+        return other.m_value == m_value;
+    }
+    bool operator!=(const Opcode &other) const
+    {
+        return other.m_value != m_value;
+    }
+    uint8_t operator*() const
+    {
+        return m_value;
+    }
+    uint8_t operator()() const
+    {
+        return m_value;
+    }
 
-    LOAD_STR,
-    LOAD_STR_MEM,
-    STORE_STR,
-    STORE_STR_MEM,
+    uint8_t value() const
+    {
+        return m_value;
+    }
 
-    INC_INT,
-    DEC_INT,
-    ADD_INT,
-    SUB_INT,
-    MUL_INT,
-    DIV_INT,
-    MOD_INT,
-
-    PRINT_INT,
-    PRINT_FLOAT,
-    PRINT_STR,
-
-    RANDOM,
-
-    JMP8,
-    JMP16,
-    JMP32,
-    JMP64,
-    JMP_INT,
-
-    JMP_LE8,
-    JMP_LE16,
-    JMP_LE32,
-    JMP_LE64,
-    JMP_LE_INT,
-
-    MOV,
-    HEAP,
-    INFO,
-
-    STOP = 255
+private:
+    uint8_t m_value;
 };
 
 }

@@ -3,13 +3,13 @@
 #include <iostream>
 
 using core::VM;
-using core::Opcode;
+using impl::Opcode;
 using impl::Strs;
 
 Strs::Strs(VM *vm)
 {
-    vm->opcode((uint32_t)Opcode::LOAD_STR, Strs::load_str);
-    vm->opcode((uint32_t)Opcode::PRINT_STR, Strs::print_str);
+    vm->opcode(Opcode::LOAD_STR(), Strs::load_str);
+    vm->opcode(Opcode::PRINT_STR(), Strs::print_str);
 }
 
 bool Strs::load_str(core::VM *vm)
